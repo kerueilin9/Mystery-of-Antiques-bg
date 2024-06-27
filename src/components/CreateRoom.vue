@@ -27,7 +27,6 @@ interface AnimalValue {
 }
 
 function getRandomAnimals(): AnimalValue[] {
-  // 定义12只动物（12生肖）
   const animals = [
     "Rat",
     "Ox",
@@ -43,14 +42,14 @@ function getRandomAnimals(): AnimalValue[] {
     "Pig",
   ];
 
-  // 初始化所有动物的值为0
+  // 動物初始化
   const animalValues: AnimalValue[] = animals.map((animal) => ({
     animal: animal,
     value: 0,
     view_value: 0,
   }));
 
-  // 从动物数组中随机选取6只动物，将它们的值设置为1
+  // 隨機選六隻動物為真
   let selectedCount = 0;
   while (selectedCount < 6) {
     const randomIndex = Math.floor(Math.random() * animals.length);

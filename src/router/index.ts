@@ -1,4 +1,3 @@
-// src/router/index.js
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 
 const path = "/Mystery-of-Antiques-bg";
