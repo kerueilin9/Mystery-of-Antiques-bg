@@ -5,6 +5,7 @@ import { setDoc, doc } from "firebase/firestore";
 const { defineProps, defineSlots, defineEmits, defineExpose, defineModel, defineOptions, withDefaults, } = await import('vue');
 const route = useRoute();
 const router = useRouter();
+const path = "/Mystery-of-Antiques-bg";
 const roomId = ref();
 roomId.value = route.params.roomId;
 const characterOptions = [
@@ -63,7 +64,7 @@ const handleSubmit = async () => {
         };
         await setDoc(doc(roomRef, "players", basicForm.value.name), playerInfo);
         router.push({
-            path: `/game/${roomId.value}`,
+            path: `${path}/game/${roomId.value}`,
             query: { host: host.value ? 1 : 0, player: basicForm.value.name },
         });
     }

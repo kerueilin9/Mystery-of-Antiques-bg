@@ -7,6 +7,7 @@ const router = useRouter();
 const generateRoomId = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
 };
+const path = "/Mystery-of-Antiques-bg";
 function getRandomAnimals() {
     // 定义12只动物（12生肖）
     const animals = [
@@ -54,7 +55,7 @@ const createRoom = async () => {
             await setDoc(doc(roomRef, "animals", animal.animal), animal);
         }
         alert(`房間已創建！房號：${roomId}`);
-        router.push({ path: `/room/${roomId}`, query: { host: "1" } });
+        router.push({ path: `${path}/room/${roomId}`, query: { host: "1" } });
     }
     catch (e) {
         console.error("Error adding document: ", e);

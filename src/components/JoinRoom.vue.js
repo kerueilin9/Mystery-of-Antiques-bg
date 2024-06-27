@@ -5,6 +5,7 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { NInput, NButton } from "naive-ui";
 const { defineProps, defineSlots, defineEmits, defineExpose, defineModel, defineOptions, withDefaults, } = await import('vue');
 const router = useRouter();
+const path = "/Mystery-of-Antiques-bg";
 const data = ref("");
 const roomId = ref();
 const joinRoom = async () => {
@@ -12,7 +13,7 @@ const joinRoom = async () => {
         const q = query(collection(db, "rooms"), where("roomId", "==", roomId.value));
         const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
-            router.push(`/room/${roomId.value}`);
+            router.push(`${path}/room/${roomId.value}`);
         }
         else {
             alert("房間不存在！");

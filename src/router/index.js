@@ -1,7 +1,8 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from "vue-router";
+const path = "/Mystery-of-Antiques-bg";
 export const HomeRoute = {
-    path: "/",
+    path: `${path}/`,
     name: "Home",
     component: () => import("@/views/Home.vue"),
     meta: {
@@ -9,7 +10,7 @@ export const HomeRoute = {
     },
 };
 export const RoomRoute = {
-    path: "/room/:roomId",
+    path: `${path}/room/:roomId`,
     name: "Room",
     component: () => import("@/views/Room.vue"),
     meta: {
@@ -17,7 +18,7 @@ export const RoomRoute = {
     },
 };
 export const GameRoute = {
-    path: "/game/:roomId",
+    path: `${path}/game/:roomId`,
     name: "Game",
     component: () => import("@/views/Game.vue"),
     meta: {
