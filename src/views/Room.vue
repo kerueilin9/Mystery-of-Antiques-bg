@@ -1,4 +1,3 @@
-<!-- src/views/Room.vue -->
 <template>
   <div class="w-10/12 max-w-sm mt-8 mx-auto text-center">
     <p class="text-3xl">房號：{{ roomId }}</p>
@@ -42,20 +41,16 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { useRoute } from "vue-router";
-import {
-  FormRules,
-  NInput,
-  NSelect,
-  NCard,
-  NForm,
-  NFormItem,
-  NButton,
-} from "naive-ui";
+import { useRoute, useRouter } from "vue-router";
+import { FormRules } from "naive-ui";
 import { db } from "@/firebaseConfig";
-import { collection, addDoc, setDoc, doc } from "firebase/firestore";
+import { setDoc, doc } from "firebase/firestore";
 
 const route = useRoute();
+const router = useRouter();
+
+const roomId = ref();
+roomId.value = route.params.roomId;
 
 const characterOptions = [
   { label: "老朝奉", value: "HuangYanyan" },
@@ -114,10 +109,15 @@ const start = computed(() => {
 const handleSubmit = async () => {
   try {
     const roomRef = doc(db, "rooms", roomId.value);
-    await setDoc(doc(roomRef, "players", "host"), {});
+    const playerInfo = {
+      host: host.value,
+      character: basicForm.value.character,
+    };
+    await setDoc(doc(roomRef, "players", basicForm.value.name), playerInfo);
+    router.push({
+      path: `/game/${roomId.value}`,
+      query: { host: host.value ? 1 : 0, player: basicForm.value.name },
+    });
   } catch (err) {}
 };
-
-const roomId = ref();
-roomId.value = route.params.roomId;
 </script>

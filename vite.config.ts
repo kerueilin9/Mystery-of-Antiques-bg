@@ -6,6 +6,7 @@ import autoprefixer from "autoprefixer";
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: "Mystery-of-Antiques-bg",
   plugins: [vue()],
   resolve: {
     alias: {
@@ -14,5 +15,8 @@ export default defineConfig({
   },
   css: {
     postcss: { plugins: [tailwindcss, autoprefixer] },
+  },
+  build: {
+    outDir: "dist",
   },
 });

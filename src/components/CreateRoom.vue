@@ -72,7 +72,6 @@ const createRoom = async () => {
     });
     const randomAnimals = getRandomAnimals();
     const roomRef = doc(db, "rooms", roomId);
-    await setDoc(doc(roomRef, "players", "host"), {});
     for (const animal of randomAnimals) {
       await setDoc(doc(roomRef, "animals", animal.animal), animal);
     }
