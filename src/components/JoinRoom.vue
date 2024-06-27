@@ -1,6 +1,11 @@
 <template>
   <div class="flex flex-col items-center">
-    <n-input class="max-w-56 block" v-model="roomId" placeholder="輸入房間ID" />
+    <n-input
+      size="large"
+      class="max-w-56 block"
+      v-model:value="roomId"
+      placeholder="輸入房間ID"
+    />
     <n-button class="text-8xl h-fit" type="info" @click="joinRoom"
       >入房</n-button
     >
@@ -28,10 +33,10 @@ const joinRoom = async () => {
     if (!querySnapshot.empty) {
       router.push(`/room/${roomId.value}`);
     } else {
-      alert("房间号不存在！");
+      alert("房間不存在！");
     }
   } else {
-    alert("请输入房间号！");
+    alert("請輸入房間號！");
   }
 };
 </script>

@@ -1,9 +1,10 @@
 <!-- src/views/Room.vue -->
 <template>
-  <div class="w-10/12 mt-8 mx-auto text-center">
+  <div class="w-10/12 max-w-sm mt-8 mx-auto text-center">
     <p class="text-3xl">房號：{{ roomId }}</p>
     <n-card title="玩家資料" class="mt-8">
       <n-form
+        class="text-center"
         ref="basicFormRef"
         require-mark-placement="left"
         :rules="basicRules"
@@ -11,17 +12,18 @@
       >
         <n-form-item path="name" label="玩家暱稱">
           <n-input
-            class="max-w-xs w-full"
+            class="w-full"
             :show-button="false"
             v-model:value="basicForm.name"
             placeholder="請填參與玩家都知道的暱稱"
           />
         </n-form-item>
-        <n-form-item path="character" label="資訊更新狀態">
+        <n-form-item path="character" label="角色">
           <n-select
-            class="max-w-xs"
+            class="w-full"
             v-model:value="basicForm.character"
             :options="characterOptions"
+            placeholder="選取抽到的角色"
           />
         </n-form-item>
       </n-form>
@@ -31,15 +33,15 @@
         <n-button size="large">返回</n-button>
       </router-link>
 
-      <n-button size="large" type="primary" @click="handleSubmit()"
-        >加入遊戲</n-button
-      >
+      <n-button size="large" type="primary" @click="handleSubmit()">{{
+        start
+      }}</n-button>
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
 import {
   FormRules,
@@ -99,6 +101,15 @@ const basicRules: FormRules = {
     },
   },
 };
+
+const host = computed(() => {
+  if ((route.query.host as string) === "1") return true;
+  return false;
+});
+
+const start = computed(() => {
+  return host.value ? "開始遊戲" : "加入遊戲";
+});
 
 const handleSubmit = async () => {
   try {
