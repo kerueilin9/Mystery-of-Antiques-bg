@@ -19,7 +19,20 @@ export const RoomRoute: RouteRecordRaw = {
   },
 };
 
-export const constantRouter: RouteRecordRaw[] = [HomeRoute, RoomRoute];
+export const GameRoute: RouteRecordRaw = {
+  path: "/game/:roomId",
+  name: "Game",
+  component: () => import("@/views/Game.vue"),
+  meta: {
+    title: "遊戲房",
+  },
+};
+
+export const constantRouter: RouteRecordRaw[] = [
+  HomeRoute,
+  RoomRoute,
+  GameRoute,
+];
 
 const router = createRouter({
   history: createWebHistory(),

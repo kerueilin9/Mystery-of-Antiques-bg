@@ -1,8 +1,10 @@
 <template>
   <div>
-    <h1>古董局中局 - 大廳</h1>
-    <CreateRoom />
-    <JoinRoom />
+    <p class="text-3xl">古董局中局 - 大廳</p>
+    <div class="flex flex-col h-80 justify-around">
+      <CreateRoom />
+      <JoinRoom />
+    </div>
   </div>
 </template>
 
