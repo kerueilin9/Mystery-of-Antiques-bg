@@ -1,8 +1,10 @@
 // src/router/index.js
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 
+const path = "/Mystery-of-Antiques-bg";
+
 export const HomeRoute: RouteRecordRaw = {
-  path: "/",
+  path: `${path}/`,
   name: "Home",
   component: () => import("@/views/Home.vue"),
   meta: {
@@ -11,7 +13,7 @@ export const HomeRoute: RouteRecordRaw = {
 };
 
 export const RoomRoute: RouteRecordRaw = {
-  path: "/room/:roomId",
+  path: `${path}/room/:roomId`,
   name: "Room",
   component: () => import("@/views/Room.vue"),
   meta: {
@@ -20,7 +22,7 @@ export const RoomRoute: RouteRecordRaw = {
 };
 
 export const GameRoute: RouteRecordRaw = {
-  path: "/game/:roomId",
+  path: `${path}/game/:roomId`,
   name: "Game",
   component: () => import("@/views/Game.vue"),
   meta: {

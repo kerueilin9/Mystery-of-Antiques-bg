@@ -21,6 +21,8 @@ import { NInput, NButton } from "naive-ui";
 
 const router = useRouter();
 
+const path = "/Mystery-of-Antiques-bg";
+
 const data = ref("");
 const roomId = ref();
 const joinRoom = async () => {
@@ -31,7 +33,7 @@ const joinRoom = async () => {
     );
     const querySnapshot = await getDocs(q);
     if (!querySnapshot.empty) {
-      router.push(`/room/${roomId.value}`);
+      router.push(`${path}/room/${roomId.value}`);
     } else {
       alert("房間不存在！");
     }
