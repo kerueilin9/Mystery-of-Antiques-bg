@@ -8,11 +8,7 @@
       role="dialog"
       aria-modal="true"
     >
-      <n-radio-group
-        v-if="character !== 'MakeAWish'"
-        v-model:value="animal"
-        name="radiogroup"
-      >
+      <n-radio-group v-model:value="animal" name="radiogroup">
         <n-space>
           <n-radio
             v-for="animal in animals"
@@ -22,13 +18,6 @@
           />
         </n-space>
       </n-radio-group>
-      <n-checkbox-group v-else :max="2" @update:value="handleUpdateValue">
-        <n-grid :y-gap="8" :cols="2">
-          <n-gi v-for="(animal, index) in animals" :key="index">
-            <n-checkbox :value="animal.name" :label="animal.name" />
-          </n-gi>
-        </n-grid>
-      </n-checkbox-group>
       <template #footer>
         <div class="flex justify-end">
           <n-button size="large" type="primary" @click="handleSubmit()"
@@ -68,9 +57,8 @@ const roomRef = doc(db, "rooms", roomId.value);
 
 const showModal = defineModel("showModal");
 const currentRound = defineModel("currentRound");
-const character = defineModel("character");
 const animals = ref<Animal[]>();
-const animal = ref<string | (string | number)[]>(null);
+const animal = ref("");
 const result = ref("");
 const isAbleToCheck = ref(true);
 
@@ -104,34 +92,18 @@ const getCurrentRoundAnimal = async () => {
 };
 
 const handleSubmit = async () => {
-  let resultAnimal: Animal[] = null;
-  if (
-    animal.value.length !== 0 &&
-    animal.value !== null &&
-    isAbleToCheck.value
-  ) {
-    const checkAnimals =
-      typeof animal.value === "string" ? [animal.value] : animal.value;
-
-    // 留下有選中的動物
-    resultAnimal = animals.value.filter((item) => {
-      return checkAnimals.some((remain) => remain === item.name);
+  let resultAnimal: Animal = null;
+  if (animal.value.length !== 0 && isAbleToCheck.value) {
+    resultAnimal = animals.value.find((item) => {
+      return item.name == animal.value;
     });
-
-    let strArray: string[] = [];
-    resultAnimal.forEach((animal) => {
-      strArray.push(`${animal.name}是${animal.view_value ? "真的" : "假的"}`);
-    });
-    result.value = strArray.join("\n");
-    console.log(result.value);
+    result.value = `${resultAnimal.name} 是 ${
+      resultAnimal.view_value ? "真的" : "假的"
+    }`;
     isAbleToCheck.value = false;
   } else {
     message.warning("無法查看");
   }
-};
-
-const handleUpdateValue = (value: (string | number)[]) => {
-  animal.value = value;
 };
 
 watch(

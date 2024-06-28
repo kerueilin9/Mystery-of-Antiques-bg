@@ -15,6 +15,10 @@ import {
   NSpace,
   NRadio,
   NRadioGroup,
+  NGi,
+  NGrid,
+  NCheckbox,
+  NCheckboxGroup,
   useMessage,
 } from "naive-ui";
 
@@ -31,6 +35,10 @@ const naive = create({
     NSpace,
     NRadio,
     NRadioGroup,
+    NGi,
+    NCheckbox,
+    NCheckboxGroup,
+    NGrid,
     useMessage,
   ],
 });

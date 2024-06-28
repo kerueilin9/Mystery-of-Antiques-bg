@@ -38,6 +38,7 @@
     <CheckAntiquesModal
       v-model:showModal="isCheckModal"
       v-model:currentRound="currentRound"
+      v-model:character="character"
     />
     <SelectModal v-model:showModal="showSelectModal" />
   </div>
@@ -59,6 +60,7 @@ import {
 import CheckAntiquesModal from "@/components/CheckAntiquesModal.vue";
 import SelectModal from "@/components/SelectModal.vue";
 import { useMessage } from "naive-ui";
+import { RefSymbol } from "@vue/reactivity";
 
 const route = useRoute();
 const router = useRouter();
@@ -82,6 +84,7 @@ const showSelectModal = ref(false);
 const isCheckModal = ref(false);
 const isSkillModal = ref(false);
 const playerData = ref();
+const character = ref("");
 
 const getPlayerData = async () => {
   try {
@@ -112,6 +115,8 @@ const getCurrentRound = async () => {
 const showCheckModal = async () => {
   playerData.value = await getPlayerData();
   if (playerData.value.myTurn === 1) {
+    character.value = playerData.value.character;
+    console.log(character.value);
     currentRound.value = await getCurrentRound();
     isCheckModal.value = true;
   } else {

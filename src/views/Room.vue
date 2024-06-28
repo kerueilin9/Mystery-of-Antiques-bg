@@ -72,14 +72,14 @@ const animals = ref<Animal[]>();
 const turn = ref(1);
 
 const characterOptions = [
-  { label: "老朝奉", value: "HuangYanyan" },
-  { label: "藥不然", value: "KidoKana" },
-  { label: "鄭國渠", value: "JiYunfu" },
-  { label: "許願", value: "FangZhen" },
-  { label: "方震", value: "MakeAWish" },
-  { label: "姬雲浮", value: "ZhengGuoqu" },
-  { label: "木戶加奈", value: "MedicineIsNot" },
-  { label: "黃煙煙", value: "LaoChaofeng" },
+  { label: "老朝奉", value: "LaoChaofeng" },
+  { label: "藥不然", value: "MedicineIsNot" },
+  { label: "鄭國渠", value: "ZhengGuoqu" },
+  { label: "許願", value: "MakeAWish" },
+  { label: "方震", value: "FangZhen" },
+  { label: "姬雲浮", value: "JiYunfu" },
+  { label: "木戶加奈", value: "KidoKana" },
+  { label: "黃煙煙", value: "HuangYanyan" },
 ];
 
 const initialBasicForm = {
