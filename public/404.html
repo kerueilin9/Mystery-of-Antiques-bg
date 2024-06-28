@@ -1,0 +1,33 @@
+<!-- <!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Page Not Found</title>
+    <meta http-equiv="refresh" content="0; url=/Mystery-of-Antiques-bg/" />
+  </head>
+  <body>
+    <p>Redirecting...</p>
+  </body>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Page Not Found</title>
+    <script>
+      // 保存當前路徑和查詢參數
+      const currentPath = window.location.pathname + window.location.search;
+
+      // 重定向到首頁並附加當前路徑作為查詢參數
+      window.location.replace(
+        `/Mystery-of-Antiques-bg/?redirectPath=${encodeURIComponent(
+          currentPath
+        )}`
+      );
+    </script>
+  </head>
+  <body>
+    <p>Redirecting...</p>
+  </body>
+</html>

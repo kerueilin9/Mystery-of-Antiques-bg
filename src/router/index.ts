@@ -36,7 +36,7 @@ export const constantRouter: RouteRecordRaw[] = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(process.env.BASE_URL),
   routes: constantRouter,
   strict: true,
   scrollBehavior(to, from, savedPosition) {
@@ -46,6 +46,15 @@ const router = createRouter({
       return { top: 0 };
     }
   },
+});
+
+router.beforeEach((to, from, next) => {
+  const redirectPath = to.query.redirectPath as string | undefined;
+  if (redirectPath) {
+    next(redirectPath);
+  } else {
+    next();
+  }
 });
 
 export default router;
