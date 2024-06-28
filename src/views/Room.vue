@@ -28,14 +28,14 @@
       </n-form>
     </n-card>
     <section class="flex gap-2 flex-wrap mt-2 justify-center">
-      <router-link to="/" class="underline">
+      <router-link to="/Mystery-of-Antiques-bg/" class="underline">
         <n-button size="large">返回</n-button>
       </router-link>
-
       <n-button size="large" type="primary" @click="handleSubmit()">{{
         start
       }}</n-button>
     </section>
+    <SelectModal v-model:showModal="showSelectModal" :name="basicForm.name" />
   </div>
 </template>
 
@@ -44,13 +44,21 @@ import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { FormRules } from "naive-ui";
 import { db } from "@/firebaseConfig";
-import { setDoc, doc } from "firebase/firestore";
+import {
+  setDoc,
+  doc,
+  collection,
+  getDocs,
+  writeBatch,
+} from "firebase/firestore";
+import SelectModal from "@/components/SelectModal.vue";
 
 const route = useRoute();
 const router = useRouter();
 
 const path = "/Mystery-of-Antiques-bg";
 
+const showSelectModal = ref(false);
 const roomId = ref();
 roomId.value = route.params.roomId;
 
@@ -108,18 +116,49 @@ const start = computed(() => {
   return host.value ? "開始遊戲" : "加入遊戲";
 });
 
+async function copyCollection(srcCollection: string, destCollection: string) {
+  try {
+    const roomRef = doc(db, "rooms", roomId.value);
+    const srcCollectionRef = collection(roomRef, srcCollection);
+    const snapshot = await getDocs(srcCollectionRef);
+    const batch = writeBatch(db);
+
+    snapshot.forEach((docSnapshot) => {
+      const destDocRef = doc(roomRef, destCollection, docSnapshot.id);
+      batch.set(destDocRef, docSnapshot.data());
+    });
+
+    await batch.commit();
+    console.log(
+      `Collection ${srcCollection} has been copied to ${destCollection}`
+    );
+  } catch (error) {
+    console.error("Error copying collection:", error);
+  }
+}
+
 const handleSubmit = async () => {
   try {
     const roomRef = doc(db, "rooms", roomId.value);
     const playerInfo = {
-      host: host.value,
+      name: basicForm.value.name,
       character: basicForm.value.character,
+      host: host.value,
+      remain: 1,
+      myTurn: 0,
+      attacked: 0,
     };
-    await setDoc(doc(roomRef, "players", basicForm.value.name), playerInfo);
-    router.push({
-      path: `${path}/game/${roomId.value}`,
-      query: { host: host.value ? 1 : 0, player: basicForm.value.name },
-    });
+    if (host.value) {
+      await setDoc(doc(roomRef, "players", basicForm.value.name), playerInfo);
+      // await copyCollection("players", "remainPlayers");
+      showSelectModal.value = true;
+    } else {
+      await setDoc(doc(roomRef, "players", basicForm.value.name), playerInfo);
+      router.push({
+        path: `${path}/game/${roomId.value}`,
+        query: { host: host.value ? 1 : 0, player: basicForm.value.name },
+      });
+    }
   } catch (err) {}
 };
 </script>

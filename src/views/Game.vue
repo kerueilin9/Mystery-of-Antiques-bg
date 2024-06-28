@@ -15,16 +15,29 @@
       <n-button class="text-4xl h-14" type="primary" size="large" @click=""
         >使用技能</n-button
       >
-      <n-button class="text-4xl h-14" type="primary" size="large" @click=""
+      <n-button
+        class="text-4xl h-14"
+        type="primary"
+        size="large"
+        @click="showSelectModal = true"
         >選擇下一位玩家</n-button
+      >
+      <n-button
+        v-if="host"
+        class="text-4xl h-14"
+        type="primary"
+        size="large"
+        @click="showSelectModal = true"
+        >投票</n-button
       >
     </div>
     <CheckAntiquesModal v-model:showModal="showModal" />
+    <SelectModal v-model:showModal="showSelectModal" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { db } from "@/firebaseConfig";
 import {
@@ -37,6 +50,7 @@ import {
   DocumentData,
 } from "firebase/firestore";
 import CheckAntiquesModal from "@/components/CheckAntiquesModal.vue";
+import SelectModal from "@/components/SelectModal.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -50,6 +64,11 @@ player.value = route.query.player;
 const roomRef = doc(db, "rooms", roomId.value);
 const turn = ref(1);
 const showModal = ref(false);
+const showSelectModal = ref(false);
+const host = computed(() => {
+  if (route.query.host === "1") return true;
+  return false;
+});
 
 interface Animal {
   name: string;
@@ -79,21 +98,35 @@ const getAnimals = async () => {
 };
 
 const setFourRandomAnimals = async () => {
-  try {
-    const value1Animals = animals.value.filter((animal) => animal.value === 1);
-    const value0Animals = animals.value.filter((animal) => animal.value === 0);
-
-    const selectedValue1 = getRandomElements(value1Animals, 2);
-    const selectedValue0 = getRandomElements(value0Animals, 2);
-
-    const fourRandomAnimals = shuffle([...selectedValue1, ...selectedValue0]);
-    for (const animal of fourRandomAnimals) {
-      await setDoc(
-        doc(roomRef, "fourRandomAnimals", String(turn.value++)),
-        animal
+  for (let i = 1; i <= 3; i++) {
+    try {
+      const value1Animals = animals.value.filter(
+        (animal) => animal.value === 1
       );
-    }
-  } catch (err) {}
+      const value0Animals = animals.value.filter(
+        (animal) => animal.value === 0
+      );
+
+      const selectedValue1 = getRandomElements(value1Animals, 2);
+      const selectedValue0 = getRandomElements(value0Animals, 2);
+
+      const fourRandomAnimals: Animal[] = shuffle([
+        ...selectedValue1,
+        ...selectedValue0,
+      ]);
+      for (const animal of fourRandomAnimals) {
+        await setDoc(
+          doc(roomRef, `ReadomAnimalForRound${i}`, String(turn.value++)),
+          animal
+        );
+      }
+      console.log(fourRandomAnimals);
+      animals.value = animals.value.filter(
+        (item) =>
+          !fourRandomAnimals.some((toRemove) => toRemove.name === item.name)
+      );
+    } catch (err) {}
+  }
 };
 
 const getRandomElements = (array, count) => {
@@ -112,7 +145,7 @@ const shuffle = (array) => {
 onMounted(async () => {
   if (route.query.host === "1") {
     await getAnimals();
-    console.log(setFourRandomAnimals());
+    setFourRandomAnimals();
   }
 });
 </script>

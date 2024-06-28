@@ -11,10 +11,22 @@ import {
   NFormItem,
   NForm,
   NSelect,
+  NMessageProvider,
+  useMessage,
 } from "naive-ui";
 
 const naive = create({
-  components: [NButton, NModal, NInput, NCard, NFormItem, NForm, NSelect],
+  components: [
+    NButton,
+    NModal,
+    NInput,
+    NCard,
+    NFormItem,
+    NForm,
+    NSelect,
+    NMessageProvider,
+    useMessage,
+  ],
 });
 
 const app = createApp(App);
