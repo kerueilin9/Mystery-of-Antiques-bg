@@ -1,39 +1,25 @@
 <template>
-  <n-modal v-model:show="showModal" :mask-closable="true">
+  <n-modal v-model:show="showModal" :mask-closable="closable ? true : false">
     <n-card
       style="width: 400px"
-      title="鑑定古董"
+      title="選擇下一位玩家"
       :bordered="false"
       size="huge"
       role="dialog"
       aria-modal="true"
     >
-      <n-radio-group v-model:value="animal" name="radiogroup">
-        <n-space>
-          <n-radio
-            v-for="animal in animals"
-            :key="animal.name"
-            :value="animal.name"
-            :label="animal.name"
-          />
-        </n-space>
-      </n-radio-group>
+      <n-select v-model:value="selectedPlayer" :options="options" />
       <template #footer>
-        <div class="flex justify-end">
-          <n-button size="large" type="primary" @click="handleSubmit()"
-            >確認</n-button
-          >
-        </div>
+        <n-button size="large" type="primary" @click="handleSubmit()"
+          >確認</n-button
+        >
       </template>
-      <n-card title="鑑定結果" v-if="result.length !== 0">
-        {{ result }}
-      </n-card>
     </n-card>
   </n-modal>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { db } from "@/firebaseConfig";
 import {
   setDoc,
@@ -45,71 +31,112 @@ import {
   query,
   updateDoc,
 } from "firebase/firestore";
-import { SelectOption, resultDark, useMessage } from "naive-ui";
+import { SelectOption, useMessage } from "naive-ui";
 import { useRoute, useRouter } from "vue-router";
+
+const path = "/Mystery-of-Antiques-bg";
+const message = useMessage();
 const route = useRoute();
 const router = useRouter();
-const message = useMessage();
+const options = ref();
+const selectedPlayer = ref("");
 
 const roomId = ref();
 roomId.value = route.params.roomId;
 const roomRef = doc(db, "rooms", roomId.value);
 
-const showModal = defineModel("showModal");
-const currentRound = defineModel("currentRound");
-const animals = ref<Animal[]>();
-const animal = ref("");
-const result = ref("");
-const isAbleToCheck = ref(true);
+const name = ref("");
+name.value = String(route.query.player);
 
-interface Animal {
+const host = computed(() => {
+  if (route.query.host === "1") return true;
+  return false;
+});
+
+const showModal = defineModel("showModal");
+const hostName = defineModel("name");
+const closable = computed(() => {
+  if (host.value && route.fullPath.includes("room")) return false;
+  return true;
+});
+
+interface Player {
   name: string;
-  value: number;
-  view_value: number;
+  character: number;
+  host: boolean | null;
+  remain: number;
 }
 
-const getCurrentRoundAnimal = async () => {
+const getPlayers = async () => {
   try {
-    console.log(currentRound.value);
-    const animalsCollectionRef = collection(
-      roomRef,
-      `ReadomAnimalForRound${currentRound.value}`
-    );
-    const querySnapshot = await getDocs(animalsCollectionRef);
-    const fetchedAnimals: Animal[] = [];
+    const playersCollectionRef = collection(roomRef, "players");
+    const querySnapshot = await getDocs(playersCollectionRef);
+    const fetchedPlayers: SelectOption[] = [];
     querySnapshot.forEach((doc) => {
-      const animalData = doc.data() as DocumentData;
-      const animal: Animal = {
-        name: animalData.name,
-        value: animalData.value,
-        view_value: animalData.view_value,
-      };
-      fetchedAnimals.push(animal);
+      const playerData = doc.data() as DocumentData;
+      if (playerData.remain) {
+        const player: SelectOption = {
+          label: playerData.name,
+          value: playerData.character,
+        };
+        fetchedPlayers.push(player);
+      }
     });
-    console.log(fetchedAnimals);
-    animals.value = fetchedAnimals;
+    options.value = fetchedPlayers;
+    console.log(options.value);
   } catch (err) {}
 };
 
+const removePlayer = async (character: string) => {
+  const userCollectionRef = collection(roomRef, "players");
+  let q = query(userCollectionRef, where("character", "==", character));
+  let snapshot = await getDocs(q);
+
+  let updatePromises = snapshot.docs.map((docSnapshot) =>
+    updateDoc(docSnapshot.ref, { remain: 0 })
+  );
+
+  await Promise.all(updatePromises);
+};
+
+const setTurnPlayer = async (character: string) => {
+  const userCollectionRef = collection(roomRef, "players");
+  let q = query(userCollectionRef, where("character", "==", character));
+  let snapshot = await getDocs(q);
+  const updatePromises1 = snapshot.docs.map((docSnapshot) =>
+    updateDoc(docSnapshot.ref, { myTurn: 1 })
+  );
+  await Promise.all(updatePromises1);
+
+  if (!host.value) {
+    q = query(userCollectionRef, where("name", "==", name.value));
+    snapshot = await getDocs(q);
+    const updatePromises2 = snapshot.docs.map((docSnapshot) =>
+      updateDoc(docSnapshot.ref, { myTurn: 0 })
+    );
+    await Promise.all(updatePromises2);
+  }
+};
+
 const handleSubmit = async () => {
-  let resultAnimal: Animal = null;
-  if (animal.value.length !== 0 && isAbleToCheck.value) {
-    resultAnimal = animals.value.find((item) => {
-      return item.name == animal.value;
+  if (selectedPlayer.value.length === 0) message.warning("請選擇玩家");
+  else if (host.value) {
+    await removePlayer(selectedPlayer.value);
+    await setTurnPlayer(selectedPlayer.value);
+    router.push({
+      path: `${path}/game/${roomId.value}`,
+      query: { host: host.value ? 1 : 0, player: String(hostName.value) },
     });
-    result.value = `${resultAnimal.name} 是 ${
-      resultAnimal.view_value ? "真的" : "假的"
-    }`;
-    isAbleToCheck.value = false;
   } else {
-    message.warning("無法查看");
+    await removePlayer(selectedPlayer.value);
+    await setTurnPlayer(selectedPlayer.value);
   }
 };
 
 watch(
   () => showModal.value,
   (value) => {
-    if (value === true) getCurrentRoundAnimal();
+    if (value === true) getPlayers();
   }
 );
 </script>

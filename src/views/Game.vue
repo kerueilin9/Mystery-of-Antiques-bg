@@ -40,6 +40,7 @@
       v-model:currentRound="currentRound"
       v-model:character="character"
     />
+    <SkillModal v-model:showModal="showSelectModal" />
     <SelectModal v-model:showModal="showSelectModal" />
   </div>
 </template>
@@ -59,6 +60,7 @@ import {
 } from "firebase/firestore";
 import CheckAntiquesModal from "@/components/CheckAntiquesModal.vue";
 import SelectModal from "@/components/SelectModal.vue";
+import SkillModal from "@/components/SkillModal.vue";
 import { useMessage } from "naive-ui";
 import { RefSymbol } from "@vue/reactivity";
 
