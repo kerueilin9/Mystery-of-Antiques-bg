@@ -45,8 +45,8 @@ const roomId = ref();
 roomId.value = route.params.roomId;
 const roomRef = doc(db, "rooms", roomId.value);
 
-const name = ref();
-name.value = route.query.player;
+const name = ref("");
+name.value = String(route.query.player);
 
 const host = computed(() => {
   if (route.query.host === "1") return true;
@@ -109,7 +109,7 @@ const setTurnPlayer = async (character: string) => {
   await Promise.all(updatePromises1);
 
   if (!host.value) {
-    q = query(userCollectionRef, where("name", "==", name));
+    q = query(userCollectionRef, where("name", "==", name.value));
     snapshot = await getDocs(q);
     const updatePromises2 = snapshot.docs.map((docSnapshot) =>
       updateDoc(docSnapshot.ref, { myTurn: 0 })

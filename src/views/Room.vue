@@ -50,17 +50,26 @@ import {
   collection,
   getDocs,
   writeBatch,
+  query,
+  where,
+  updateDoc,
+  increment,
+  DocumentData,
 } from "firebase/firestore";
 import SelectModal from "@/components/SelectModal.vue";
 
 const route = useRoute();
 const router = useRouter();
 
+const roomId = ref();
+roomId.value = route.params.roomId;
+const roomRef = doc(db, "rooms", roomId.value);
+
 const path = "/Mystery-of-Antiques-bg";
 
 const showSelectModal = ref(false);
-const roomId = ref();
-roomId.value = route.params.roomId;
+const animals = ref<Animal[]>();
+const turn = ref(1);
 
 const characterOptions = [
   { label: "老朝奉", value: "HuangYanyan" },
@@ -116,26 +125,87 @@ const start = computed(() => {
   return host.value ? "開始遊戲" : "加入遊戲";
 });
 
-async function copyCollection(srcCollection: string, destCollection: string) {
-  try {
-    const roomRef = doc(db, "rooms", roomId.value);
-    const srcCollectionRef = collection(roomRef, srcCollection);
-    const snapshot = await getDocs(srcCollectionRef);
-    const batch = writeBatch(db);
-
-    snapshot.forEach((docSnapshot) => {
-      const destDocRef = doc(roomRef, destCollection, docSnapshot.id);
-      batch.set(destDocRef, docSnapshot.data());
-    });
-
-    await batch.commit();
-    console.log(
-      `Collection ${srcCollection} has been copied to ${destCollection}`
-    );
-  } catch (error) {
-    console.error("Error copying collection:", error);
-  }
+interface Animal {
+  name: string;
+  value: number;
+  view_value: number;
 }
+
+const getAnimals = async () => {
+  try {
+    const animalsCollectionRef = collection(roomRef, "animals");
+    const querySnapshot = await getDocs(animalsCollectionRef);
+    const fetchedAnimals: Animal[] = [];
+    querySnapshot.forEach((doc) => {
+      const animalData = doc.data() as DocumentData;
+      const animal: Animal = {
+        name: animalData.animal,
+        value: animalData.value,
+        view_value: animalData.view_value,
+      };
+      fetchedAnimals.push(animal);
+    });
+    console.log(fetchedAnimals);
+    animals.value = fetchedAnimals;
+  } catch (err) {}
+};
+
+const setFourRandomAnimals = async () => {
+  for (let i = 1; i <= 3; i++) {
+    try {
+      const value1Animals = animals.value.filter(
+        (animal) => animal.value === 1
+      );
+      const value0Animals = animals.value.filter(
+        (animal) => animal.value === 0
+      );
+
+      const selectedValue1 = getRandomElements(value1Animals, 2);
+      const selectedValue0 = getRandomElements(value0Animals, 2);
+
+      const fourRandomAnimals: Animal[] = shuffle([
+        ...selectedValue1,
+        ...selectedValue0,
+      ]);
+      for (const animal of fourRandomAnimals) {
+        await setDoc(
+          doc(roomRef, `ReadomAnimalForRound${i}`, String(turn.value++)),
+          animal
+        );
+      }
+      console.log(fourRandomAnimals);
+      animals.value = animals.value.filter(
+        (item) =>
+          !fourRandomAnimals.some((toRemove) => toRemove.name === item.name)
+      );
+    } catch (err) {}
+  }
+};
+
+const getRandomElements = (array, count) => {
+  const shuffled = array.sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+};
+
+const shuffle = (array) => {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+};
+
+const addCurrentRound = async () => {
+  const roomsRef = collection(db, "rooms");
+  let q = query(roomsRef, where("roomId", "==", roomId.value));
+  let snapshot = await getDocs(q);
+
+  let updatePromises = snapshot.docs.map((docSnapshot) =>
+    updateDoc(docSnapshot.ref, { currentRound: increment(1) })
+  );
+
+  await Promise.all(updatePromises);
+};
 
 const handleSubmit = async () => {
   try {
@@ -150,7 +220,9 @@ const handleSubmit = async () => {
     };
     if (host.value) {
       await setDoc(doc(roomRef, "players", basicForm.value.name), playerInfo);
-      // await copyCollection("players", "remainPlayers");
+      await addCurrentRound();
+      await getAnimals();
+      await setFourRandomAnimals();
       showSelectModal.value = true;
     } else {
       await setDoc(doc(roomRef, "players", basicForm.value.name), playerInfo);

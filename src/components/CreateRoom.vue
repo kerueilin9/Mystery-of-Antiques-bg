@@ -69,6 +69,7 @@ const createRoom = async () => {
   try {
     await setDoc(doc(db, "rooms", roomId), {
       roomId: roomId,
+      currentRound: 0,
       createdAt: new Date(),
     });
     const randomAnimals = getRandomAnimals();

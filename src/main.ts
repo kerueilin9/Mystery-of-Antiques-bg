@@ -12,6 +12,9 @@ import {
   NForm,
   NSelect,
   NMessageProvider,
+  NSpace,
+  NRadio,
+  NRadioGroup,
   useMessage,
 } from "naive-ui";
 
@@ -25,6 +28,9 @@ const naive = create({
     NForm,
     NSelect,
     NMessageProvider,
+    NSpace,
+    NRadio,
+    NRadioGroup,
     useMessage,
   ],
 });
