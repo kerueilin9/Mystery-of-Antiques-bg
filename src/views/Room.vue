@@ -122,6 +122,7 @@ const host = computed(() => {
   if ((route.query.host as string) === "1") return true;
   return false;
 });
+const hostValue = host.value;
 
 const start = computed(() => {
   return host.value ? "開始遊戲" : "加入遊戲";
@@ -238,7 +239,7 @@ const handleSubmit = async () => {
 
 onBeforeUnmount(async () => {
   try {
-    if (roomId.value && host.value) {
+    if (roomId.value && hostValue) {
       const deleteRoomWithSubcollections = httpsCallable(
         functions,
         "deleteRoomWithSubcollections"
