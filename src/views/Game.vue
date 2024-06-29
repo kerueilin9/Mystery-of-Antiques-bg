@@ -23,7 +23,7 @@
         class="text-4xl h-14"
         type="primary"
         size="large"
-        @click="showSelectModal = true"
+        @click="showSelectModal()"
         >選擇下一位玩家</n-button
       >
       <n-button
@@ -31,7 +31,7 @@
         class="text-4xl h-14"
         type="primary"
         size="large"
-        @click="showSelectModal = true"
+        @click=""
         >投票</n-button
       >
     </div>
@@ -40,8 +40,12 @@
       v-model:currentRound="currentRound"
       v-model:character="character"
     />
-    <SkillModal v-model:showModal="showSelectModal" />
-    <SelectModal v-model:showModal="showSelectModal" />
+    <SkillModal
+      v-model:showModal="isSkillModal"
+      v-model:currentRound="currentRound"
+      v-model:character="character"
+    />
+    <SelectModal v-model:showModal="isSelectModal" />
   </div>
 </template>
 
@@ -82,7 +86,7 @@ const host = computed(() => {
 
 const currentRound = ref(0);
 const turn = ref(1);
-const showSelectModal = ref(false);
+const isSelectModal = ref(false);
 const isCheckModal = ref(false);
 const isSkillModal = ref(false);
 const playerData = ref();
@@ -129,8 +133,18 @@ const showCheckModal = async () => {
 const showSkillModal = async () => {
   playerData.value = await getPlayerData();
   if (playerData.value.myTurn === 1) {
+    character.value = playerData.value.character;
     currentRound.value = await getCurrentRound();
     isSkillModal.value = true;
+  } else {
+    message.warning("還沒有到你的回合");
+  }
+};
+
+const showSelectModal = async () => {
+  playerData.value = await getPlayerData();
+  if (playerData.value.myTurn === 1) {
+    isSelectModal.value = true;
   } else {
     message.warning("還沒有到你的回合");
   }
