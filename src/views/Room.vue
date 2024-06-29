@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { FormRules } from "naive-ui";
 import { db } from "@/firebaseConfig";
@@ -55,6 +55,7 @@ import {
   updateDoc,
   increment,
   DocumentData,
+  deleteDoc,
 } from "firebase/firestore";
 import SelectModal from "@/components/SelectModal.vue";
 
@@ -233,4 +234,29 @@ const handleSubmit = async () => {
     }
   } catch (err) {}
 };
+
+onBeforeUnmount(async () => {
+  try {
+    if (roomId.value) {
+      console.log(`嘗試刪除房間，ID：${roomId.value}`);
+      const roomsRef = collection(db, "rooms");
+      const q = query(roomsRef, where("roomId", "==", roomId.value));
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) {
+        console.log(`未找到房間ID為 ${roomId.value} 的文件。`);
+        return;
+      }
+
+      snapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+        console.log(`房間 ${roomId.value} 已成功刪除。`);
+      });
+    } else {
+      console.warn("未提供房間ID。");
+    }
+  } catch (error) {
+    console.error("Error deleting room: ", error);
+  }
+});
 </script>
