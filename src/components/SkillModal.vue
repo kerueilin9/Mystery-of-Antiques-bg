@@ -159,13 +159,13 @@ const toggleViewValue = async (docId: string) => {
       if (currentValue >= 0) {
         const newValue = currentValue === 1 ? 0 : 1;
         await setDoc(docRef, { view_value: newValue }, { merge: true });
-        console.log(`Document ${docId} updated: view_value set to ${newValue}`);
+        // console.log(`Document ${docId} updated: view_value set to ${newValue}`);
       }
     } else {
-      console.log("No such document!");
+      console.warn("無對應資料");
     }
   } catch (error) {
-    console.error("Error updating document:", error);
+    console.error("老嘲諷技能問題: ", error);
   }
 };
 
@@ -180,7 +180,7 @@ const changeTrueFalse = async (isActivate: boolean) => {
         toggleViewValue(doc.id);
       });
     } catch (error) {
-      console.error("Error getting documents:", error);
+      console.error("老嘲諷技能問題: ", error);
     }
   }
 };
