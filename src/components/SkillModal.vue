@@ -2,15 +2,36 @@
   <n-modal v-model:show="showModal" :mask-closable="closable ? true : false">
     <n-card
       style="width: 400px"
-      title="選擇下一位玩家"
+      title="使用技能"
       :bordered="false"
       size="huge"
       role="dialog"
       aria-modal="true"
     >
-      <n-select v-model:value="selectedPlayer" :options="options" />
+      <div v-if="character === 'LaoChaofeng'">
+        <n-checkbox v-model:checked="LaoChaofengSkill">
+          之後玩家看到的真假互換(同陣營和姬雲浮不適用)
+        </n-checkbox>
+      </div>
+      <div v-else-if="character === 'ZhengGuoqu'">
+        <n-radio-group v-model:value="coveredAnimal" name="radiogroup">
+          <n-space>
+            <n-radio
+              v-for="animal in animals"
+              :key="animal.name"
+              :value="animal.name"
+              :label="animal.name"
+            />
+          </n-space>
+        </n-radio-group>
+      </div>
+      <!-- <n-select v-model:value="selectedPlayer" :options="options" /> -->
       <template #footer>
-        <n-button size="large" type="primary" @click="handleSubmit()"
+        <n-button
+          size="large"
+          type="primary"
+          :loading="isLoading"
+          @click="handleSubmit()"
           >確認</n-button
         >
       </template>
@@ -30,6 +51,7 @@ import {
   where,
   query,
   updateDoc,
+  getDoc,
 } from "firebase/firestore";
 import { SelectOption, useMessage } from "naive-ui";
 import { useRoute, useRouter } from "vue-router";
@@ -53,12 +75,25 @@ const host = computed(() => {
   return false;
 });
 
-const showModal = defineModel("showModal");
-const hostName = defineModel("name");
 const closable = computed(() => {
   if (host.value && route.fullPath.includes("room")) return false;
   return true;
 });
+const showModal = defineModel("showModal");
+const currentRound = defineModel<number>("currentRound");
+const character = defineModel<string>("character");
+const LaoChaofengSkill = ref(false);
+const MedicineIsNotSkill = ref(null);
+const ZhengGuoquSkill = ref("");
+const animals = ref<Animal[]>();
+const coveredAnimal = ref("");
+const isLoading = ref(false);
+
+interface Animal {
+  name: string;
+  value: number;
+  view_value: number;
+}
 
 interface Player {
   name: string;
@@ -74,62 +109,127 @@ const getPlayers = async () => {
     const fetchedPlayers: SelectOption[] = [];
     querySnapshot.forEach((doc) => {
       const playerData = doc.data() as DocumentData;
-      if (playerData.remain) {
-        const player: SelectOption = {
-          label: playerData.name,
-          value: playerData.character,
-        };
-        fetchedPlayers.push(player);
-      }
+      const player: SelectOption = {
+        label: playerData.name,
+        value: playerData.character,
+      };
+      fetchedPlayers.push(player);
     });
     options.value = fetchedPlayers;
     console.log(options.value);
   } catch (err) {}
 };
 
-const removePlayer = async (character: string) => {
-  const userCollectionRef = collection(roomRef, "players");
-  let q = query(userCollectionRef, where("character", "==", character));
-  let snapshot = await getDocs(q);
-
-  let updatePromises = snapshot.docs.map((docSnapshot) =>
-    updateDoc(docSnapshot.ref, { remain: 0 })
-  );
-
-  await Promise.all(updatePromises);
+const getCurrentRoundAnimal = async () => {
+  try {
+    console.log(currentRound.value);
+    const animalsCollectionRef = collection(
+      roomRef,
+      `ReadomAnimalForRound${currentRound.value}`
+    );
+    const querySnapshot = await getDocs(animalsCollectionRef);
+    const fetchedAnimals: Animal[] = [];
+    querySnapshot.forEach((doc) => {
+      const animalData = doc.data() as DocumentData;
+      const animal: Animal = {
+        name: animalData.name,
+        value: animalData.value,
+        view_value: animalData.view_value,
+      };
+      fetchedAnimals.push(animal);
+    });
+    console.log(fetchedAnimals);
+    animals.value = fetchedAnimals;
+  } catch (err) {}
 };
 
-const setTurnPlayer = async (character: string) => {
-  const userCollectionRef = collection(roomRef, "players");
-  let q = query(userCollectionRef, where("character", "==", character));
-  let snapshot = await getDocs(q);
-  const updatePromises1 = snapshot.docs.map((docSnapshot) =>
-    updateDoc(docSnapshot.ref, { myTurn: 1 })
-  );
-  await Promise.all(updatePromises1);
-
-  if (!host.value) {
-    q = query(userCollectionRef, where("name", "==", name.value));
-    snapshot = await getDocs(q);
-    const updatePromises2 = snapshot.docs.map((docSnapshot) =>
-      updateDoc(docSnapshot.ref, { myTurn: 0 })
+const toggleViewValue = async (docId: string) => {
+  try {
+    const docRef = doc(
+      roomRef,
+      `ReadomAnimalForRound${currentRound.value}`,
+      docId
     );
-    await Promise.all(updatePromises2);
+
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const currentValue = docSnap.data().view_value;
+
+      if (currentValue >= 0) {
+        const newValue = currentValue === 1 ? 0 : 1;
+        await setDoc(docRef, { view_value: newValue }, { merge: true });
+        console.log(`Document ${docId} updated: view_value set to ${newValue}`);
+      }
+    } else {
+      console.log("No such document!");
+    }
+  } catch (error) {
+    console.error("Error updating document:", error);
   }
 };
 
-const handleSubmit = async () => {
-  if (selectedPlayer.value.length === 0) message.warning("請選擇玩家");
-  else if (host.value) {
-    await removePlayer(selectedPlayer.value);
-    await setTurnPlayer(selectedPlayer.value);
-    router.push({
-      path: `${path}/game/${roomId.value}`,
-      query: { host: host.value ? 1 : 0, player: String(hostName.value) },
+const changeTrueFalse = async (isActivate: boolean) => {
+  if (isActivate) {
+    try {
+      const querySnapshot = await getDocs(
+        collection(roomRef, `ReadomAnimalForRound${currentRound.value}`)
+      );
+
+      querySnapshot.forEach((doc) => {
+        toggleViewValue(doc.id);
+      });
+    } catch (error) {
+      console.error("Error getting documents:", error);
+    }
+  }
+};
+
+const setCoveredAnimal = async (animal: string) => {
+  try {
+    const q = query(
+      collection(roomRef, `ReadomAnimalForRound${currentRound.value}`),
+      where("name", "==", animal)
+    );
+    const snapshot = await getDocs(q);
+    let updatePromises = snapshot.docs.map((docSnapshot) => {
+      if (docSnapshot.data().value === 1) {
+        updateDoc(docSnapshot.ref, { value: -1, view_value: -1 });
+      } else if (docSnapshot.data().value === 0) {
+        updateDoc(docSnapshot.ref, { value: -2, view_value: -2 });
+      }
     });
-  } else {
-    await removePlayer(selectedPlayer.value);
-    await setTurnPlayer(selectedPlayer.value);
+
+    await Promise.all(updatePromises);
+  } catch (err) {}
+};
+
+const handleSubmit = async () => {
+  switch (character.value) {
+    case "LaoChaofeng":
+      isLoading.value = true;
+      await changeTrueFalse(LaoChaofengSkill.value);
+      showModal.value = false;
+      isLoading.value = false;
+      break;
+    case "MedicineIsNot":
+      isLoading.value = true;
+      await setCoveredAnimal(coveredAnimal.value);
+      showModal.value = false;
+      isLoading.value = false;
+      break;
+    case "ZhengGuoqu":
+      isLoading.value = true;
+      await setCoveredAnimal(coveredAnimal.value);
+      showModal.value = false;
+      isLoading.value = false;
+      break;
+    case "FangZhen":
+      isLoading.value = true;
+      await changeTrueFalse(LaoChaofengSkill.value);
+      showModal.value = false;
+      isLoading.value = false;
+      break;
   }
 };
 
@@ -137,6 +237,7 @@ watch(
   () => showModal.value,
   (value) => {
     if (value === true) getPlayers();
+    if (character.value === "ZhengGuoqu") getCurrentRoundAnimal();
   }
 );
 </script>

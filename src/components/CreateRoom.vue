@@ -1,6 +1,10 @@
 <template>
   <div>
-    <n-button class="text-8xl h-fit" type="primary" @click="createRoom"
+    <n-button
+      class="text-8xl h-fit"
+      type="primary"
+      :loading="isLoading"
+      @click="createRoom"
       >開房</n-button
     >
   </div>
@@ -9,8 +13,8 @@
 <script setup lang="ts">
 import { db } from "@/firebaseConfig";
 import { collection, addDoc, setDoc, doc } from "firebase/firestore";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { NButton } from "naive-ui";
 
 const router = useRouter();
 
@@ -19,6 +23,8 @@ const generateRoomId = () => {
 };
 
 const path = "/Mystery-of-Antiques-bg";
+
+const isLoading = ref(false);
 
 interface AnimalValue {
   animal: string;
@@ -67,6 +73,7 @@ const createRoom = async () => {
   const roomId = generateRoomId();
 
   try {
+    isLoading.value = true;
     await setDoc(doc(db, "rooms", roomId), {
       roomId: roomId,
       currentRound: 0,
@@ -80,6 +87,7 @@ const createRoom = async () => {
     alert(`房間已創建！房號：${roomId}`);
     router.push({ path: `${path}/room/${roomId}`, query: { host: "1" } });
   } catch (e) {
+    isLoading.value = false;
     console.error("Error adding document: ", e);
   }
 };

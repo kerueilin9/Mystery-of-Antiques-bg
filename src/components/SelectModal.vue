@@ -1,5 +1,8 @@
 <template>
-  <n-modal v-model:show="showModal" :mask-closable="closable ? true : false">
+  <n-modal
+    v-model:show="showModal"
+    :mask-closable="isHostAndInGame ? true : false"
+  >
     <n-card
       style="width: 400px"
       title="選擇下一位玩家"
@@ -55,7 +58,7 @@ const host = computed(() => {
 
 const showModal = defineModel("showModal");
 const hostName = defineModel("name");
-const closable = computed(() => {
+const isHostAndInGame = computed(() => {
   if (host.value && route.fullPath.includes("room")) return false;
   return true;
 });
@@ -108,7 +111,7 @@ const setTurnPlayer = async (character: string) => {
   );
   await Promise.all(updatePromises1);
 
-  if (!host.value) {
+  if (isHostAndInGame.value) {
     q = query(userCollectionRef, where("name", "==", name.value));
     snapshot = await getDocs(q);
     const updatePromises2 = snapshot.docs.map((docSnapshot) =>
@@ -120,7 +123,7 @@ const setTurnPlayer = async (character: string) => {
 
 const handleSubmit = async () => {
   if (selectedPlayer.value.length === 0) message.warning("請選擇玩家");
-  else if (host.value) {
+  else if (!isHostAndInGame.value) {
     await removePlayer(selectedPlayer.value);
     await setTurnPlayer(selectedPlayer.value);
     router.push({

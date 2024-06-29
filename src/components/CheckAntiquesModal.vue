@@ -68,7 +68,7 @@ const roomRef = doc(db, "rooms", roomId.value);
 
 const showModal = defineModel("showModal");
 const currentRound = defineModel("currentRound");
-const character = defineModel("character");
+const character = defineModel<string>("character");
 const animals = ref<Animal[]>();
 const animal = ref<string | (string | number)[]>(null);
 const result = ref("");
@@ -79,6 +79,8 @@ interface Animal {
   value: number;
   view_value: number;
 }
+
+const character1 = ["JiYunfu", "MedicineIsNot", "ZhengGuoqu", "LaoChaofeng"];
 
 const getCurrentRoundAnimal = async () => {
   try {
@@ -119,9 +121,28 @@ const handleSubmit = async () => {
     });
 
     let strArray: string[] = [];
-    resultAnimal.forEach((animal) => {
-      strArray.push(`${animal.name}是${animal.view_value ? "真的" : "假的"}`);
-    });
+    if (character1.includes(character.value)) {
+      resultAnimal.forEach((animal) => {
+        strArray.push(
+          `${animal.name}是${
+            animal.value >= 0 ? (animal.value ? "真的" : "假的") : "什麼鬼"
+          }`
+        );
+      });
+    } else {
+      resultAnimal.forEach((animal) => {
+        strArray.push(
+          `${animal.name}是${
+            animal.view_value >= 0
+              ? animal.view_value
+                ? "真的"
+                : "假的"
+              : "什麼鬼"
+          }`
+        );
+      });
+    }
+
     result.value = strArray.join("\n");
     console.log(result.value);
     isAbleToCheck.value = false;
