@@ -44,6 +44,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { httpsCallable } from "firebase/functions";
 import { useRoute, useRouter } from "vue-router";
 import { FormRules } from "naive-ui";
+import { increaseValue } from "@/hooks/setFirebaseData";
 import { db, functions } from "@/firebaseConfig";
 import {
   setDoc,
@@ -83,6 +84,8 @@ const characterOptions = [
   { label: "木戶加奈", value: "KidoKana" },
   { label: "黃煙煙", value: "HuangYanyan" },
 ];
+
+const excludedCharacters = ["KidoKana", "HuangYanyan"];
 
 const initialBasicForm = {
   name: null,
@@ -199,7 +202,7 @@ const shuffle = (array) => {
 };
 
 const addCurrentRound = async () => {
-  const roomsRef = collection(db, "rooms");
+  const roomsRef = collection(roomRef, "rooms");
   let q = query(roomsRef, where("roomId", "==", roomId.value));
   let snapshot = await getDocs(q);
 
@@ -208,6 +211,10 @@ const addCurrentRound = async () => {
   );
 
   await Promise.all(updatePromises);
+};
+
+const getRandomNumber = (): number => {
+  return Math.floor(Math.random() * 3) + 1;
 };
 
 const handleSubmit = async () => {
@@ -220,10 +227,22 @@ const handleSubmit = async () => {
       remain: 1,
       myTurn: 0,
       attacked: 0,
+      isCheckAble: 1,
+      isSkillAble: 1,
+      inActiveRound: excludedCharacters.includes(basicForm.value.character)
+        ? getRandomNumber()
+        : 0,
     };
     if (host.value) {
       await setDoc(doc(roomRef, "players", basicForm.value.name), playerInfo);
-      await addCurrentRound();
+      await increaseValue(
+        db,
+        "rooms",
+        "roomId",
+        roomId.value,
+        "currentRound",
+        1
+      );
       await getAnimals();
       await setFourRandomAnimals();
       showSelectModal.value = true;
@@ -239,7 +258,7 @@ const handleSubmit = async () => {
 
 onBeforeUnmount(async () => {
   try {
-    if (roomId.value && hostValue) {
+    if (roomId.value && hostValue && false) {
       const deleteRoomWithSubcollections = httpsCallable(
         functions,
         "deleteRoomWithSubcollections"
