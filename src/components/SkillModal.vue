@@ -110,7 +110,6 @@ const goodCharacters = [
   "KidoKana",
   "HuangYanyan",
 ];
-const badCharacters = ["LaoChaofeng", "MedicineIsNot", "ZhengGuoqu"];
 
 const isSubmitAble = computed(() => {
   return !(
