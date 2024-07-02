@@ -121,7 +121,9 @@ const getCurrentRound = async () => {
 
 const showCheckModal = async () => {
   playerData.value = await getPlayerData();
-  if (playerData.value.myTurn === 1) {
+  if (playerData.value.character === "FangZhen")
+    message.warning("你沒有鑑寶能力");
+  else if (playerData.value.myTurn === 1) {
     currentRound.value = await getCurrentRound();
     isCheckModal.value = true;
   } else {

@@ -8,12 +8,12 @@
       role="dialog"
       aria-modal="true"
     >
-      <div v-if="character === 'LaoChaofeng'">
+      <div v-if="playerData.character === 'LaoChaofeng'">
         <n-checkbox v-model:checked="LaoChaofengSkill">
           之後玩家看到的真假互換(同陣營和姬雲浮不適用)
         </n-checkbox>
       </div>
-      <div v-else-if="character === 'ZhengGuoqu'">
+      <div v-else-if="playerData.character === 'ZhengGuoqu'">
         <n-radio-group v-model:value="coveredAnimal" name="radiogroup">
           <n-space>
             <n-radio
@@ -25,7 +25,11 @@
           </n-space>
         </n-radio-group>
       </div>
-      <!-- <n-select v-model:value="selectedPlayer" :options="options" /> -->
+      <n-select
+        v-else-if="playerData.character === 'MedicineIsNot'"
+        v-model:value="selectedPlayer"
+        :options="options"
+      />
       <template #footer>
         <n-button
           size="large"
@@ -41,6 +45,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { Animal, Player } from "@/types";
 import { db } from "@/firebaseConfig";
 import {
   setDoc,
@@ -53,7 +58,7 @@ import {
   updateDoc,
   getDoc,
 } from "firebase/firestore";
-import { SelectOption, useMessage } from "naive-ui";
+import { SelectGroupOption, SelectOption, useMessage } from "naive-ui";
 import { useRoute, useRouter } from "vue-router";
 
 const path = "/Mystery-of-Antiques-bg";
@@ -81,26 +86,27 @@ const closable = computed(() => {
 });
 const showModal = defineModel("showModal");
 const currentRound = defineModel<number>("currentRound");
-const character = defineModel<string>("character");
+const playerData = defineModel<Player>("playerData");
+const animals = ref<Animal[]>();
 const LaoChaofengSkill = ref(false);
 const MedicineIsNotSkill = ref(null);
-const ZhengGuoquSkill = ref("");
-const animals = ref<Animal[]>();
 const coveredAnimal = ref("");
 const isLoading = ref(false);
 
-interface Animal {
-  name: string;
-  value: number;
-  view_value: number;
-}
-
-interface Player {
-  name: string;
-  character: number;
-  host: boolean | null;
-  remain: number;
-}
+const medicineIsNotOptions: Array<SelectOption | SelectGroupOption> = [
+  {
+    type: "group",
+    label: "本輪已行動的玩家",
+    key: "acted",
+    children: [],
+  },
+  {
+    type: "group",
+    label: "本輪還未行動的玩家",
+    key: "pending",
+    children: [],
+  },
+];
 
 const getPlayers = async () => {
   try {
@@ -205,7 +211,7 @@ const setCoveredAnimal = async (animal: string) => {
 };
 
 const handleSubmit = async () => {
-  switch (character.value) {
+  switch (playerData.value.character) {
     case "LaoChaofeng":
       isLoading.value = true;
       await changeTrueFalse(LaoChaofengSkill.value);
@@ -237,7 +243,7 @@ watch(
   () => showModal.value,
   (value) => {
     if (value === true) getPlayers();
-    if (character.value === "ZhengGuoqu") getCurrentRoundAnimal();
+    if (playerData.value.character === "ZhengGuoqu") getCurrentRoundAnimal();
   }
 );
 </script>
