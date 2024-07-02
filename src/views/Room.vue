@@ -1,7 +1,7 @@
 <template>
   <div class="w-10/12 max-w-sm mt-8 mx-auto text-center">
     <p class="text-3xl">房號：{{ roomId }}</p>
-    <n-card title="玩家資料" class="mt-8">
+    <n-card header-style="font-size: 32px" title="玩家資料" class="mt-8">
       <n-form
         class="text-center"
         ref="basicFormRef"
@@ -9,17 +9,23 @@
         :rules="basicRules"
         :model="basicForm"
       >
-        <n-form-item path="name" label="玩家暱稱">
+        <n-form-item path="name" label="玩家暱稱" label-style="font-size: 24px">
           <n-input
-            class="w-full"
+            size="large"
+            class="w-full text-xl"
             :show-button="false"
             v-model:value="basicForm.name"
             placeholder="請填參與玩家都知道的暱稱"
           />
         </n-form-item>
-        <n-form-item path="character" label="角色">
+        <n-form-item
+          path="character"
+          label="角色"
+          label-style="font-size: 24px"
+        >
           <n-select
-            class="w-full"
+            size="large"
+            class="w-full custom-select-font-size"
             v-model:value="basicForm.character"
             :options="characterOptions"
             placeholder="選取抽到的角色"
@@ -28,22 +34,28 @@
       </n-form>
     </n-card>
     <section class="flex gap-2 flex-wrap mt-2 justify-center">
-      <router-link to="/Mystery-of-Antiques-bg/" class="underline">
-        <n-button size="large">返回</n-button>
+      <router-link to="/Mystery-of-Antiques-bg/">
+        <n-button class="text-2xl" size="large">返回</n-button>
       </router-link>
-      <n-button size="large" type="primary" @click="handleSubmit()">{{
-        start
-      }}</n-button>
+      <n-button
+        class="text-2xl"
+        size="large"
+        type="primary"
+        @click="handleSubmit()"
+        >{{ start }}</n-button
+      >
     </section>
     <SelectModal v-model:showModal="showSelectModal" :name="basicForm.name" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { httpsCallable } from "firebase/functions";
 import { useRoute, useRouter } from "vue-router";
 import { FormRules } from "naive-ui";
-import { db } from "@/firebaseConfig";
+import { increaseValue } from "@/hooks/setFirebaseData";
+import { db, functions } from "@/firebaseConfig";
 import {
   setDoc,
   doc,
@@ -55,8 +67,10 @@ import {
   updateDoc,
   increment,
   DocumentData,
+  deleteDoc,
 } from "firebase/firestore";
 import SelectModal from "@/components/SelectModal.vue";
+import { largerSize } from "naive-ui/es/_utils";
 
 const route = useRoute();
 const router = useRouter();
@@ -70,6 +84,7 @@ const path = "/Mystery-of-Antiques-bg";
 const showSelectModal = ref(false);
 const animals = ref<Animal[]>();
 const turn = ref(1);
+const gameStart = ref(0);
 
 const characterOptions = [
   { label: "老朝奉", value: "LaoChaofeng" },
@@ -81,6 +96,8 @@ const characterOptions = [
   { label: "木戶加奈", value: "KidoKana" },
   { label: "黃煙煙", value: "HuangYanyan" },
 ];
+
+const excludedCharacters = ["KidoKana", "HuangYanyan"];
 
 const initialBasicForm = {
   name: null,
@@ -120,6 +137,7 @@ const host = computed(() => {
   if ((route.query.host as string) === "1") return true;
   return false;
 });
+const hostValue = host.value;
 
 const start = computed(() => {
   return host.value ? "開始遊戲" : "加入遊戲";
@@ -196,7 +214,7 @@ const shuffle = (array) => {
 };
 
 const addCurrentRound = async () => {
-  const roomsRef = collection(db, "rooms");
+  const roomsRef = collection(roomRef, "rooms");
   let q = query(roomsRef, where("roomId", "==", roomId.value));
   let snapshot = await getDocs(q);
 
@@ -205,6 +223,10 @@ const addCurrentRound = async () => {
   );
 
   await Promise.all(updatePromises);
+};
+
+const getRandomNumber = (): number => {
+  return Math.floor(Math.random() * 3) + 1;
 };
 
 const handleSubmit = async () => {
@@ -217,12 +239,25 @@ const handleSubmit = async () => {
       remain: 1,
       myTurn: 0,
       attacked: 0,
+      isCheckAble: 1,
+      isSkillAble: 1,
+      inActiveRound: excludedCharacters.includes(basicForm.value.character)
+        ? getRandomNumber()
+        : 0,
     };
     if (host.value) {
       await setDoc(doc(roomRef, "players", basicForm.value.name), playerInfo);
-      await addCurrentRound();
+      await increaseValue(
+        db,
+        "rooms",
+        "roomId",
+        roomId.value,
+        "currentRound",
+        1
+      );
       await getAnimals();
       await setFourRandomAnimals();
+      gameStart.value = 1;
       showSelectModal.value = true;
     } else {
       await setDoc(doc(roomRef, "players", basicForm.value.name), playerInfo);
@@ -233,4 +268,19 @@ const handleSubmit = async () => {
     }
   } catch (err) {}
 };
+
+onBeforeUnmount(async () => {
+  try {
+    if (roomId.value && hostValue && !gameStart.value) {
+      const deleteRoomWithSubcollections = httpsCallable(
+        functions,
+        "deleteRoomWithSubcollections"
+      );
+      await deleteRoomWithSubcollections({ roomId: roomId.value });
+      console.log(`房間 ${roomId.value} 已成功刪除。`);
+    }
+  } catch (error) {
+    console.error("Error deleting room: ", error);
+  }
+});
 </script>

@@ -9,7 +9,7 @@
       aria-modal="true"
     >
       <n-radio-group
-        v-if="character !== 'MakeAWish'"
+        v-if="playerData.character !== 'MakeAWish'"
         v-model:value="animal"
         name="radiogroup"
       >
@@ -30,10 +30,19 @@
         </n-grid>
       </n-checkbox-group>
       <template #footer>
-        <div class="flex justify-end">
-          <n-button size="large" type="primary" @click="handleSubmit()"
-            >確認</n-button
-          >
+        <div class="flex justify-end mt-8">
+          <div>
+            <n-button size="large" @click="showModal = false">返回</n-button>
+          </div>
+          <div>
+            <n-button
+              v-if="isAbleToCheck"
+              size="large"
+              type="primary"
+              @click="handleSubmit()"
+              >確認</n-button
+            >
+          </div>
         </div>
       </template>
       <n-card title="鑑定結果" v-if="result.length !== 0">
@@ -56,8 +65,10 @@ import {
   query,
   updateDoc,
 } from "firebase/firestore";
-import { SelectOption, resultDark, useMessage } from "naive-ui";
+import { useMessage } from "naive-ui";
 import { useRoute, useRouter } from "vue-router";
+import { Animal, Player } from "@/types";
+import { increaseValue } from "@/hooks/setFirebaseData";
 const route = useRoute();
 const router = useRouter();
 const message = useMessage();
@@ -67,20 +78,14 @@ roomId.value = route.params.roomId;
 const roomRef = doc(db, "rooms", roomId.value);
 
 const showModal = defineModel("showModal");
-const currentRound = defineModel("currentRound");
-const character = defineModel<string>("character");
+const currentRound = defineModel<number>("currentRound");
+const playerData = defineModel<Player>("playerData");
 const animals = ref<Animal[]>();
 const animal = ref<string | (string | number)[]>(null);
 const result = ref("");
 const isAbleToCheck = ref(true);
 
-interface Animal {
-  name: string;
-  value: number;
-  view_value: number;
-}
-
-const character1 = ["JiYunfu", "MedicineIsNot", "ZhengGuoqu", "LaoChaofeng"];
+const truthSeers = ["JiYunfu", "MedicineIsNot", "ZhengGuoqu", "LaoChaofeng"];
 
 const getCurrentRoundAnimal = async () => {
   try {
@@ -107,11 +112,30 @@ const getCurrentRoundAnimal = async () => {
 
 const handleSubmit = async () => {
   let resultAnimal: Animal[] = null;
-  if (
-    animal.value.length !== 0 &&
-    animal.value !== null &&
-    isAbleToCheck.value
-  ) {
+  if (animal.value.length === 0 || animal.value === null) {
+    message.warning("請選擇至少一隻動物");
+  } else if (playerData.value.isCheckAble > currentRound.value) {
+    message.warning("本輪已查看過，請勿作弊");
+  } else if (playerData.value.attacked > 0) {
+    message.warning("你被藥不然偷襲了!!!", { closable: true, duration: 0 });
+    isAbleToCheck.value = false;
+    increaseValue(
+      roomRef,
+      "players",
+      "name",
+      playerData.value.name,
+      "isCheckAble",
+      1
+    );
+    // increaseValue(
+    //   roomRef,
+    //   "players",
+    //   "name",
+    //   playerData.value.name,
+    //   "attacked",
+    //   -1
+    // );
+  } else {
     const checkAnimals =
       typeof animal.value === "string" ? [animal.value] : animal.value;
 
@@ -121,7 +145,7 @@ const handleSubmit = async () => {
     });
 
     let strArray: string[] = [];
-    if (character1.includes(character.value)) {
+    if (truthSeers.includes(playerData.value.character)) {
       resultAnimal.forEach((animal) => {
         strArray.push(
           `${animal.name}是${
@@ -133,7 +157,8 @@ const handleSubmit = async () => {
       resultAnimal.forEach((animal) => {
         strArray.push(
           `${animal.name}是${
-            animal.view_value >= 0
+            animal.view_value >= 0 &&
+            playerData.value.inActiveRound !== currentRound.value
               ? animal.view_value
                 ? "真的"
                 : "假的"
@@ -146,8 +171,14 @@ const handleSubmit = async () => {
     result.value = strArray.join("\n");
     console.log(result.value);
     isAbleToCheck.value = false;
-  } else {
-    message.warning("無法查看");
+    increaseValue(
+      roomRef,
+      "players",
+      "name",
+      playerData.value.name,
+      "isCheckAble",
+      1
+    );
   }
 };
 
@@ -158,7 +189,12 @@ const handleUpdateValue = (value: (string | number)[]) => {
 watch(
   () => showModal.value,
   (value) => {
-    if (value === true) getCurrentRoundAnimal();
+    if (value === true) {
+      getCurrentRoundAnimal();
+      if (playerData.value.isCheckAble <= currentRound.value)
+        isAbleToCheck.value = true;
+      else isAbleToCheck.value = false;
+    }
   }
 );
 </script>

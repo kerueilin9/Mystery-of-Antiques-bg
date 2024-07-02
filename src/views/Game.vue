@@ -38,11 +38,12 @@
     <CheckAntiquesModal
       v-model:showModal="isCheckModal"
       v-model:currentRound="currentRound"
-      v-model:character="character"
+      v-model:playerData="playerData"
     />
     <SkillModal
       v-model:showModal="isSkillModal"
       v-model:currentRound="currentRound"
+      v-model:playerData="playerData"
       v-model:character="character"
     />
     <SelectModal v-model:showModal="isSelectModal" />
@@ -120,9 +121,9 @@ const getCurrentRound = async () => {
 
 const showCheckModal = async () => {
   playerData.value = await getPlayerData();
-  if (playerData.value.myTurn === 1) {
-    character.value = playerData.value.character;
-    console.log(character.value);
+  if (playerData.value.character === "FangZhen")
+    message.warning("你沒有鑑寶能力");
+  else if (playerData.value.myTurn === 1) {
     currentRound.value = await getCurrentRound();
     isCheckModal.value = true;
   } else {

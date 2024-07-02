@@ -1,5 +1,5 @@
 <template>
-  <n-modal v-model:show="showModal" :mask-closable="closable ? true : false">
+  <n-modal v-model:show="showModal">
     <n-card
       style="width: 400px"
       title="使用技能"
@@ -8,12 +8,12 @@
       role="dialog"
       aria-modal="true"
     >
-      <div v-if="character === 'LaoChaofeng'">
+      <div v-if="playerData.character === 'LaoChaofeng'">
         <n-checkbox v-model:checked="LaoChaofengSkill">
           之後玩家看到的真假互換(同陣營和姬雲浮不適用)
         </n-checkbox>
       </div>
-      <div v-else-if="character === 'ZhengGuoqu'">
+      <div v-else-if="playerData.character === 'ZhengGuoqu'">
         <n-radio-group v-model:value="coveredAnimal" name="radiogroup">
           <n-space>
             <n-radio
@@ -25,22 +25,44 @@
           </n-space>
         </n-radio-group>
       </div>
-      <!-- <n-select v-model:value="selectedPlayer" :options="options" /> -->
+      <n-select
+        v-else-if="playerData.character === 'MedicineIsNot'"
+        v-model:value="attackedPlayer"
+        :options="medicineIsNotOptions"
+      />
+      <n-select
+        v-else-if="playerData.character === 'FangZhen'"
+        v-model:value="checkedPlayer"
+        :options="options"
+      />
       <template #footer>
-        <n-button
-          size="large"
-          type="primary"
-          :loading="isLoading"
-          @click="handleSubmit()"
-          >確認</n-button
-        >
+        <div class="flex justify-end mt-8">
+          <div>
+            <n-button size="large" @click="showModal = false">返回</n-button>
+          </div>
+          <div>
+            <n-button
+              v-if="isAbleToCheck"
+              size="large"
+              type="primary"
+              :loading="isLoading"
+              :disabled="!isSubmitAble"
+              @click="handleSubmit()"
+              >確認</n-button
+            >
+          </div>
+        </div>
       </template>
+      <n-card title="鑑定結果" v-if="playerResult.length !== 0">
+        {{ playerResult }}
+      </n-card>
     </n-card>
   </n-modal>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { Animal, Player } from "@/types";
 import { db } from "@/firebaseConfig";
 import {
   setDoc,
@@ -53,70 +75,99 @@ import {
   updateDoc,
   getDoc,
 } from "firebase/firestore";
-import { SelectOption, useMessage } from "naive-ui";
+import { SelectGroupOption, SelectOption, useMessage } from "naive-ui";
 import { useRoute, useRouter } from "vue-router";
+import { increaseValue } from "@/hooks/setFirebaseData";
 
 const path = "/Mystery-of-Antiques-bg";
 const message = useMessage();
 const route = useRoute();
 const router = useRouter();
-const options = ref();
-const selectedPlayer = ref("");
+const options = ref<SelectOption[]>();
+const options_test = ref<SelectOption[]>();
 
 const roomId = ref();
 roomId.value = route.params.roomId;
 const roomRef = doc(db, "rooms", roomId.value);
 
-const name = ref("");
-name.value = String(route.query.player);
-
-const host = computed(() => {
-  if (route.query.host === "1") return true;
-  return false;
-});
-
-const closable = computed(() => {
-  if (host.value && route.fullPath.includes("room")) return false;
-  return true;
-});
 const showModal = defineModel("showModal");
 const currentRound = defineModel<number>("currentRound");
-const character = defineModel<string>("character");
-const LaoChaofengSkill = ref(false);
-const MedicineIsNotSkill = ref(null);
-const ZhengGuoquSkill = ref("");
+const playerData = defineModel<Player>("playerData");
 const animals = ref<Animal[]>();
+const LaoChaofengSkill = ref(false);
+const attackedPlayer = ref("");
 const coveredAnimal = ref("");
+const checkedPlayer = ref("");
+const playerResult = ref("");
+
 const isLoading = ref(false);
+const isAbleToCheck = ref(true);
 
-interface Animal {
-  name: string;
-  value: number;
-  view_value: number;
-}
+const goodCharacters = [
+  "MakeAWish",
+  "FangZhen",
+  "JiYunfu",
+  "KidoKana",
+  "HuangYanyan",
+];
 
-interface Player {
-  name: string;
-  character: number;
-  host: boolean | null;
-  remain: number;
-}
+const isSubmitAble = computed(() => {
+  return !(
+    !LaoChaofengSkill.value &&
+    attackedPlayer.value.length === 0 &&
+    coveredAnimal.value.length === 0 &&
+    checkedPlayer.value.length === 0
+  );
+});
+
+options_test.value = [{ label: "435", value: "MedicineIsNot" }];
+
+const medicineIsNotOptions = ref<Array<SelectOption | SelectGroupOption>>([]);
 
 const getPlayers = async () => {
   try {
     const playersCollectionRef = collection(roomRef, "players");
     const querySnapshot = await getDocs(playersCollectionRef);
-    const fetchedPlayers: SelectOption[] = [];
+    const actedPlayers: SelectOption[] = [];
+    const pendingPlayers: SelectOption[] = [];
+    const allPlayers: SelectOption[] = [];
     querySnapshot.forEach((doc) => {
       const playerData = doc.data() as DocumentData;
+      if (playerData.remain) {
+        const player: SelectOption = {
+          label: playerData.name,
+          value: playerData.name,
+        };
+        pendingPlayers.push(player);
+      } else {
+        const player: SelectOption = {
+          label: playerData.name,
+          value: playerData.name,
+        };
+        actedPlayers.push(player);
+      }
       const player: SelectOption = {
         label: playerData.name,
         value: playerData.character,
       };
-      fetchedPlayers.push(player);
+      allPlayers.push(player);
     });
-    options.value = fetchedPlayers;
+    options.value = allPlayers;
     console.log(options.value);
+    medicineIsNotOptions.value = [
+      {
+        type: "group",
+        label: "本輪已行動的玩家",
+        key: "acted",
+        children: actedPlayers,
+      },
+      {
+        type: "group",
+        label: "本輪還未行動的玩家",
+        key: "pending",
+        children: pendingPlayers,
+      },
+    ];
   } catch (err) {}
 };
 
@@ -204,40 +255,78 @@ const setCoveredAnimal = async (animal: string) => {
   } catch (err) {}
 };
 
+const attackingPlayer = async (name: string) => {
+  increaseValue(roomRef, "players", "name", name, "attacked", 1);
+};
+
+const checkPlayer = async (name: string) => {
+  playerResult.value = `此玩家是${
+    goodCharacters.includes(name) ? "好人" : "壞人"
+  }`;
+};
+
 const handleSubmit = async () => {
-  switch (character.value) {
-    case "LaoChaofeng":
-      isLoading.value = true;
-      await changeTrueFalse(LaoChaofengSkill.value);
-      showModal.value = false;
-      isLoading.value = false;
-      break;
-    case "MedicineIsNot":
-      isLoading.value = true;
-      await setCoveredAnimal(coveredAnimal.value);
-      showModal.value = false;
-      isLoading.value = false;
-      break;
-    case "ZhengGuoqu":
-      isLoading.value = true;
-      await setCoveredAnimal(coveredAnimal.value);
-      showModal.value = false;
-      isLoading.value = false;
-      break;
-    case "FangZhen":
-      isLoading.value = true;
-      await changeTrueFalse(LaoChaofengSkill.value);
-      showModal.value = false;
-      isLoading.value = false;
-      break;
+  if (playerData.value.isSkillAble > currentRound.value) {
+    message.warning("本輪已使用過");
+  } else if (playerData.value.attacked > 0) {
+    message.warning("你被藥不然偷襲了!!!", { closable: true, duration: 0 });
+    isAbleToCheck.value = false;
+    increaseValue(
+      roomRef,
+      "players",
+      "name",
+      playerData.value.name,
+      "isSkillAble",
+      1
+    );
+  } else {
+    switch (playerData.value.character) {
+      case "LaoChaofeng":
+        isLoading.value = true;
+        await changeTrueFalse(LaoChaofengSkill.value);
+        showModal.value = false;
+        isLoading.value = false;
+        break;
+      case "MedicineIsNot":
+        isLoading.value = true;
+        await attackingPlayer(attackedPlayer.value);
+        showModal.value = false;
+        isLoading.value = false;
+        break;
+      case "ZhengGuoqu":
+        isLoading.value = true;
+        await setCoveredAnimal(coveredAnimal.value);
+        showModal.value = false;
+        isLoading.value = false;
+        break;
+      case "FangZhen":
+        isLoading.value = true;
+        await checkPlayer(checkedPlayer.value);
+        isAbleToCheck.value = false;
+        isLoading.value = false;
+        break;
+    }
+    increaseValue(
+      roomRef,
+      "players",
+      "name",
+      playerData.value.name,
+      "isSkillAble",
+      1
+    );
   }
 };
 
 watch(
   () => showModal.value,
   (value) => {
-    if (value === true) getPlayers();
-    if (character.value === "ZhengGuoqu") getCurrentRoundAnimal();
+    if (value === true) {
+      getPlayers();
+      if (playerData.value.isSkillAble <= currentRound.value)
+        isAbleToCheck.value = true;
+      else isAbleToCheck.value = false;
+    }
+    if (playerData.value.character === "ZhengGuoqu") getCurrentRoundAnimal();
   }
 );
 </script>
