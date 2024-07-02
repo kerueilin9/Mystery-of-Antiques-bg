@@ -6,11 +6,23 @@
   flex-direction: column;
   justify-content: space-around;
   align-items: center;
-  height: 80vh; /* 设定父容器的高度 */
+  height: 80vh;
 }
 #app {
   width: 100%;
   text-align: center;
+}
+
+.custom-select-font-size .n-base-selection-label {
+  @apply text-xl;
+}
+
+.n-base-select-menu .n-base-select-option {
+  @apply text-xl;
+}
+
+.n-base-select-menu .n-base-select-group-header {
+  @apply text-base;
 }
 
 @media (prefers-color-scheme: light) {

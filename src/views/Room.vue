@@ -1,7 +1,7 @@
 <template>
   <div class="w-10/12 max-w-sm mt-8 mx-auto text-center">
     <p class="text-3xl">房號：{{ roomId }}</p>
-    <n-card title="玩家資料" class="mt-8">
+    <n-card header-style="font-size: 32px" title="玩家資料" class="mt-8">
       <n-form
         class="text-center"
         ref="basicFormRef"
@@ -9,17 +9,23 @@
         :rules="basicRules"
         :model="basicForm"
       >
-        <n-form-item path="name" label="玩家暱稱">
+        <n-form-item path="name" label="玩家暱稱" label-style="font-size: 24px">
           <n-input
-            class="w-full"
+            size="large"
+            class="w-full text-xl"
             :show-button="false"
             v-model:value="basicForm.name"
             placeholder="請填參與玩家都知道的暱稱"
           />
         </n-form-item>
-        <n-form-item path="character" label="角色">
+        <n-form-item
+          path="character"
+          label="角色"
+          label-style="font-size: 24px"
+        >
           <n-select
-            class="w-full"
+            size="large"
+            class="w-full custom-select-font-size"
             v-model:value="basicForm.character"
             :options="characterOptions"
             placeholder="選取抽到的角色"
@@ -28,12 +34,16 @@
       </n-form>
     </n-card>
     <section class="flex gap-2 flex-wrap mt-2 justify-center">
-      <router-link to="/Mystery-of-Antiques-bg/" class="underline">
-        <n-button size="large">返回</n-button>
+      <router-link to="/Mystery-of-Antiques-bg/">
+        <n-button class="text-2xl" size="large">返回</n-button>
       </router-link>
-      <n-button size="large" type="primary" @click="handleSubmit()">{{
-        start
-      }}</n-button>
+      <n-button
+        class="text-2xl"
+        size="large"
+        type="primary"
+        @click="handleSubmit()"
+        >{{ start }}</n-button
+      >
     </section>
     <SelectModal v-model:showModal="showSelectModal" :name="basicForm.name" />
   </div>
@@ -60,6 +70,7 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import SelectModal from "@/components/SelectModal.vue";
+import { largerSize } from "naive-ui/es/_utils";
 
 const route = useRoute();
 const router = useRouter();
@@ -73,6 +84,7 @@ const path = "/Mystery-of-Antiques-bg";
 const showSelectModal = ref(false);
 const animals = ref<Animal[]>();
 const turn = ref(1);
+const gameStart = ref(0);
 
 const characterOptions = [
   { label: "老朝奉", value: "LaoChaofeng" },
@@ -245,6 +257,7 @@ const handleSubmit = async () => {
       );
       await getAnimals();
       await setFourRandomAnimals();
+      gameStart.value = 1;
       showSelectModal.value = true;
     } else {
       await setDoc(doc(roomRef, "players", basicForm.value.name), playerInfo);
@@ -258,7 +271,7 @@ const handleSubmit = async () => {
 
 onBeforeUnmount(async () => {
   try {
-    if (roomId.value && hostValue && false) {
+    if (roomId.value && hostValue && !gameStart.value) {
       const deleteRoomWithSubcollections = httpsCallable(
         functions,
         "deleteRoomWithSubcollections"

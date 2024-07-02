@@ -115,7 +115,6 @@ const handleSubmit = async () => {
   if (animal.value.length === 0 || animal.value === null) {
     message.warning("請選擇至少一隻動物");
   } else if (playerData.value.isCheckAble > currentRound.value) {
-    isAbleToCheck.value = false;
     message.warning("本輪已查看過，請勿作弊");
   } else if (playerData.value.attacked > 0) {
     message.warning("你被藥不然偷襲了!!!", { closable: true, duration: 0 });
@@ -192,7 +191,7 @@ watch(
   (value) => {
     if (value === true) {
       getCurrentRoundAnimal();
-      if (playerData.value.isCheckAble === currentRound.value)
+      if (playerData.value.isCheckAble <= currentRound.value)
         isAbleToCheck.value = true;
       else isAbleToCheck.value = false;
     }
