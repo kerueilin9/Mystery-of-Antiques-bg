@@ -68,7 +68,7 @@ import {
 import { useMessage } from "naive-ui";
 import { useRoute, useRouter } from "vue-router";
 import { Animal, Player } from "@/types";
-import { increaseValue } from "@/hooks/setFirebaseData";
+import { increaseValue, setValue } from "@/hooks/setFirebaseData";
 const route = useRoute();
 const router = useRouter();
 const message = useMessage();
@@ -119,22 +119,14 @@ const handleSubmit = async () => {
   } else if (playerData.value.attacked > 0) {
     message.warning("你被藥不然偷襲了!!!", { closable: true, duration: 0 });
     isAbleToCheck.value = false;
-    increaseValue(
+    setValue(
       roomRef,
       "players",
       "name",
       playerData.value.name,
       "isCheckAble",
-      1
+      currentRound.value + 1
     );
-    // increaseValue(
-    //   roomRef,
-    //   "players",
-    //   "name",
-    //   playerData.value.name,
-    //   "attacked",
-    //   -1
-    // );
   } else {
     const checkAnimals =
       typeof animal.value === "string" ? [animal.value] : animal.value;
@@ -171,13 +163,13 @@ const handleSubmit = async () => {
     result.value = strArray.join("\n");
     console.log(result.value);
     isAbleToCheck.value = false;
-    increaseValue(
+    setValue(
       roomRef,
       "players",
       "name",
       playerData.value.name,
       "isCheckAble",
-      1
+      currentRound.value + 1
     );
   }
 };

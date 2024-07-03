@@ -13,7 +13,11 @@
     >
       <n-select v-model:value="selectedPlayer" :options="options" />
       <template #footer>
-        <n-button size="large" type="primary" @click="handleSubmit()"
+        <n-button
+          :loading="isLoading"
+          size="large"
+          type="primary"
+          @click="handleSubmit()"
           >確認</n-button
         >
       </template>
@@ -36,6 +40,8 @@ import {
 } from "firebase/firestore";
 import { SelectOption, useMessage } from "naive-ui";
 import { useRoute, useRouter } from "vue-router";
+import { increaseValue } from "@/hooks/setFirebaseData";
+import { Player } from "@/types";
 
 const path = "/Mystery-of-Antiques-bg";
 const message = useMessage();
@@ -43,6 +49,7 @@ const route = useRoute();
 const router = useRouter();
 const options = ref();
 const selectedPlayer = ref("");
+const isLoading = ref(false);
 
 const roomId = ref();
 roomId.value = route.params.roomId;
@@ -57,18 +64,12 @@ const host = computed(() => {
 });
 
 const showModal = defineModel("showModal");
-const hostName = defineModel("name");
+const playerData = defineModel<Player>("playerData");
+const hostName = defineModel<string>("name");
 const isHostAndInGame = computed(() => {
   if (host.value && route.fullPath.includes("room")) return false;
   return true;
 });
-
-interface Player {
-  name: string;
-  character: number;
-  host: boolean | null;
-  remain: number;
-}
 
 const getPlayers = async () => {
   try {
@@ -131,8 +132,19 @@ const handleSubmit = async () => {
       query: { host: host.value ? 1 : 0, player: String(hostName.value) },
     });
   } else {
+    isLoading.value = true;
     await removePlayer(selectedPlayer.value);
     await setTurnPlayer(selectedPlayer.value);
+    increaseValue(
+      roomRef,
+      "players",
+      "name",
+      playerData.value.name,
+      "attacked",
+      playerData.value.attacked > 0 ? -1 : 0
+    );
+    showModal.value = false;
+    isLoading.value = false;
   }
 };
 

@@ -44,9 +44,11 @@
       v-model:showModal="isSkillModal"
       v-model:currentRound="currentRound"
       v-model:playerData="playerData"
-      v-model:character="character"
     />
-    <SelectModal v-model:showModal="isSelectModal" />
+    <SelectModal
+      v-model:showModal="isSelectModal"
+      v-model:playerData="playerData"
+    />
   </div>
 </template>
 

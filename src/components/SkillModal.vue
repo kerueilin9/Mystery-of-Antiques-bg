@@ -77,7 +77,7 @@ import {
 } from "firebase/firestore";
 import { SelectGroupOption, SelectOption, useMessage } from "naive-ui";
 import { useRoute, useRouter } from "vue-router";
-import { increaseValue } from "@/hooks/setFirebaseData";
+import { increaseValue, setValue } from "@/hooks/setFirebaseData";
 
 const path = "/Mystery-of-Antiques-bg";
 const message = useMessage();
@@ -271,13 +271,13 @@ const handleSubmit = async () => {
   } else if (playerData.value.attacked > 0) {
     message.warning("你被藥不然偷襲了!!!", { closable: true, duration: 0 });
     isAbleToCheck.value = false;
-    increaseValue(
+    setValue(
       roomRef,
       "players",
       "name",
       playerData.value.name,
       "isSkillAble",
-      1
+      currentRound.value + 1
     );
   } else {
     switch (playerData.value.character) {
@@ -306,13 +306,13 @@ const handleSubmit = async () => {
         isLoading.value = false;
         break;
     }
-    increaseValue(
+    setValue(
       roomRef,
       "players",
       "name",
       playerData.value.name,
       "isSkillAble",
-      1
+      currentRound.value + 1
     );
   }
 };
