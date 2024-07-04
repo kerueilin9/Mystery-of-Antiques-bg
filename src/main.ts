@@ -19,6 +19,7 @@ import {
   NGrid,
   NCheckbox,
   NCheckboxGroup,
+  NIcon,
   useMessage,
 } from "naive-ui";
 
@@ -39,6 +40,7 @@ const naive = create({
     NCheckbox,
     NCheckboxGroup,
     NGrid,
+    NIcon,
     useMessage,
   ],
 });
