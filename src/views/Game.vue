@@ -1,5 +1,5 @@
 <template>
-  <div class="w-10/12 max-w-sm mt-8 mx-auto text-center">
+  <div class="w-10/12 max-w-sm mt-28 mx-auto text-center">
     <p class="text-3xl">房號：{{ roomId }}</p>
     <div class="flex flex-col h-auto justify-around">
       <n-button class="text-4xl h-14 mt-8" type="primary" size="large" @click=""

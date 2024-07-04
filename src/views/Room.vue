@@ -1,5 +1,5 @@
 <template>
-  <div class="w-10/12 max-w-sm mt-8 mx-auto text-center">
+  <div class="w-10/12 max-w-sm mt-28 mx-auto text-center">
     <p class="text-3xl">房號：{{ roomId }}</p>
     <n-card header-style="font-size: 32px" title="玩家資料" class="mt-8">
       <n-form
