@@ -135,14 +135,16 @@ const handleSubmit = async () => {
     isLoading.value = true;
     await removePlayer(selectedPlayer.value);
     await setTurnPlayer(selectedPlayer.value);
-    increaseValue(
-      roomRef,
-      "players",
-      "name",
-      playerData.value.name,
-      "attacked",
-      playerData.value.attacked > 0 ? -1 : 0
-    );
+    if (playerData.value.attacked > 0) {
+      increaseValue(
+        roomRef,
+        "players",
+        "name",
+        playerData.value.name,
+        "attacked",
+        -1
+      );
+    }
     showModal.value = false;
     isLoading.value = false;
   }

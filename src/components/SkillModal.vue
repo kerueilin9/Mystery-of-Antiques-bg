@@ -321,12 +321,16 @@ watch(
   () => showModal.value,
   (value) => {
     if (value === true) {
-      getPlayers();
       if (playerData.value.isSkillAble <= currentRound.value)
         isAbleToCheck.value = true;
       else isAbleToCheck.value = false;
     }
     if (playerData.value.character === "ZhengGuoqu") getCurrentRoundAnimal();
+    if (
+      playerData.value.character === "FangZhen" ||
+      playerData.value.character === "MedicineIsNot"
+    )
+      getPlayers();
   }
 );
 </script>

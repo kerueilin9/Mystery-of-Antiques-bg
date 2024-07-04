@@ -1,39 +1,46 @@
 <template>
   <div class="w-10/12 max-w-sm mt-8 mx-auto text-center">
     <p class="text-3xl">房號：{{ roomId }}</p>
-    <div class="flex flex-col h-96 justify-around">
-      <n-button class="text-4xl h-14" type="primary" size="large" @click=""
+    <div class="flex flex-col h-auto justify-around">
+      <n-button class="text-4xl h-14 mt-8" type="primary" size="large" @click=""
         >查看隊友</n-button
       >
       <n-button
-        class="text-4xl h-14"
+        class="text-4xl h-14 mt-8"
         type="primary"
         size="large"
         @click="showCheckModal()"
         >鑑定古董</n-button
       >
       <n-button
-        class="text-4xl h-14"
+        class="text-4xl h-14 mt-8"
         type="primary"
         size="large"
         @click="showSkillModal()"
         >使用技能</n-button
       >
       <n-button
-        class="text-4xl h-14"
+        class="text-4xl h-14 mt-8"
         type="primary"
         size="large"
         @click="showSelectModal()"
         >選擇下一位玩家</n-button
       >
-      <n-button
-        v-if="host"
-        class="text-4xl h-14"
-        type="primary"
-        size="large"
-        @click=""
+      <n-button class="text-4xl h-14 mt-8" type="warning" size="large" @click=""
         >投票</n-button
       >
+    </div>
+    <div class="flex flex-col items-center">
+      <n-button
+        @click=""
+        circle
+        class="w-20 h-20 absolute bottom-20"
+        dashed
+        type="info"
+      >
+        <template #icon>
+          <n-icon class="text-6xl"><CreateOutline /></n-icon> </template
+      ></n-button>
     </div>
     <CheckAntiquesModal
       v-model:showModal="isCheckModal"
@@ -55,6 +62,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { CreateOutline } from "@vicons/ionicons5";
 import { db } from "@/firebaseConfig";
 import {
   setDoc,
@@ -69,7 +77,6 @@ import CheckAntiquesModal from "@/components/CheckAntiquesModal.vue";
 import SelectModal from "@/components/SelectModal.vue";
 import SkillModal from "@/components/SkillModal.vue";
 import { useMessage } from "naive-ui";
-import { RefSymbol } from "@vue/reactivity";
 
 const route = useRoute();
 const router = useRouter();
