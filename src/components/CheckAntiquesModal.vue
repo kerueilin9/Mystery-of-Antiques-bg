@@ -182,6 +182,7 @@ watch(
   () => showModal.value,
   (value) => {
     if (value === true) {
+      result.value = "";
       getCurrentRoundAnimal();
       if (playerData.value.isCheckAble <= currentRound.value)
         isAbleToCheck.value = true;

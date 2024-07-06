@@ -36,11 +36,9 @@
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
-    background: url("./assets/background.jpg") no-repeat center center fixed;
+    background: url("") no-repeat center center fixed;
+    background-color: #eeeeee;
     background-size: cover;
-    background-color: rgba(0, 0, 0, 0.4);
     height: 100%;
   }
   a:hover {

@@ -2,7 +2,11 @@
   <div class="w-10/12 max-w-sm mt-28 mx-auto text-center">
     <p class="text-3xl">房號：{{ roomId }}</p>
     <div class="flex flex-col h-auto justify-around">
-      <n-button class="text-4xl h-14 mt-8" type="primary" size="large" @click=""
+      <n-button
+        class="text-4xl h-14 mt-8"
+        type="primary"
+        size="large"
+        @click="showTeammate()"
         >查看隊友</n-button
       >
       <n-button
@@ -26,7 +30,12 @@
         @click="showSelectModal()"
         >選擇下一位玩家</n-button
       >
-      <n-button class="text-4xl h-14 mt-8" type="warning" size="large" @click=""
+      <n-button
+        v-if="host"
+        class="text-4xl h-14 mt-8"
+        type="warning"
+        size="large"
+        @click="showVoteModal()"
         >投票</n-button
       >
     </div>
@@ -56,6 +65,11 @@
       v-model:showModal="isSelectModal"
       v-model:playerData="playerData"
     />
+    <VoteModal
+      v-model:showModal="isVoteModal"
+      v-model:currentRound="currentRound"
+      v-model:playerData="playerData"
+    />
   </div>
 </template>
 
@@ -76,6 +90,7 @@ import {
 import CheckAntiquesModal from "@/components/CheckAntiquesModal.vue";
 import SelectModal from "@/components/SelectModal.vue";
 import SkillModal from "@/components/SkillModal.vue";
+import VoteModal from "@/components/VoteModal.vue";
 import { useMessage } from "naive-ui";
 
 const route = useRoute();
@@ -99,14 +114,48 @@ const turn = ref(1);
 const isSelectModal = ref(false);
 const isCheckModal = ref(false);
 const isSkillModal = ref(false);
+const isVoteModal = ref(false);
 const playerData = ref();
 const character = ref("");
+
+const teammates = ["LaoChaofeng", "MedicineIsNot"];
+
+const getRemainPlayerCount = async (): Promise<number> => {
+  try {
+    const playersCollectionRef = collection(roomRef, "players");
+    const querySnapshot = await getDocs(playersCollectionRef);
+    let remainPlayerCount = 0;
+    querySnapshot.forEach((doc) => {
+      const playerData = doc.data() as DocumentData;
+      if (playerData.remain) {
+        ++remainPlayerCount;
+      }
+    });
+    console.log(remainPlayerCount);
+    return remainPlayerCount;
+  } catch (err) {
+    return -1;
+  }
+};
 
 const getPlayerData = async () => {
   try {
     const q = query(
       collection(roomRef, "players"),
       where("name", "==", player.value)
+    );
+    const querySnapshot = await getDocs(q);
+    const docSnapshot = querySnapshot.docs[0];
+    const playerData = docSnapshot.data() as DocumentData;
+    return playerData;
+  } catch (err) {}
+};
+
+const getPlayerDataByCharacter = async (character: string) => {
+  try {
+    const q = query(
+      collection(roomRef, "players"),
+      where("character", "==", character)
     );
     const querySnapshot = await getDocs(q);
     const docSnapshot = querySnapshot.docs[0];
@@ -126,6 +175,19 @@ const getCurrentRound = async () => {
     const roomData = docSnapshot.data() as DocumentData;
     return roomData.currentRound;
   } catch (err) {}
+};
+
+const showTeammate = async () => {
+  const playerCharacter = await getPlayerData();
+  if (!teammates.includes(playerCharacter.character)) {
+    message.warning("你沒有隊友");
+  } else if (playerCharacter.character === "LaoChaofeng") {
+    const teammate = await getPlayerDataByCharacter("MedicineIsNot");
+    message.success(`你的隊友是${teammate.name}`);
+  } else if (playerCharacter.character === "MedicineIsNot") {
+    const teammate = await getPlayerDataByCharacter("LaoChaofeng");
+    message.success(`你的隊友是${teammate.name}`);
+  }
 };
 
 const showCheckModal = async () => {
@@ -157,6 +219,16 @@ const showSelectModal = async () => {
     isSelectModal.value = true;
   } else {
     message.warning("還沒有到你的回合");
+  }
+};
+
+const showVoteModal = async () => {
+  playerData.value = await getPlayerData();
+  if ((await getRemainPlayerCount()) === 0) {
+    currentRound.value = await getCurrentRound();
+    isVoteModal.value = true;
+  } else {
+    message.warning("還有玩家未行動");
   }
 };
 
