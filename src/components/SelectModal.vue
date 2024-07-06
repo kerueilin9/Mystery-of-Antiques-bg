@@ -153,7 +153,10 @@ const handleSubmit = async () => {
 watch(
   () => showModal.value,
   (value) => {
-    if (value === true) getPlayers();
+    if (value === true) {
+      getPlayers();
+      selectedPlayer.value = null;
+    }
   }
 );
 </script>

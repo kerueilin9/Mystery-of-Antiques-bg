@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p class="text-5xl mt-8">古董局中局 - 大廳</p>
+    <p class="text-5xl mt-28">古董局中局</p>
     <div class="flex flex-col h-96 justify-around">
       <CreateRoom />
       <JoinRoom />

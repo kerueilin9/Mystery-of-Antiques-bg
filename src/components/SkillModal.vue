@@ -136,13 +136,13 @@ const getPlayers = async () => {
       if (playerData.remain) {
         const player: SelectOption = {
           label: playerData.name,
-          value: playerData.name,
+          value: playerData.character,
         };
         pendingPlayers.push(player);
       } else {
         const player: SelectOption = {
           label: playerData.name,
-          value: playerData.name,
+          value: playerData.character,
         };
         actedPlayers.push(player);
       }
@@ -255,8 +255,11 @@ const setCoveredAnimal = async (animal: string) => {
   } catch (err) {}
 };
 
-const attackingPlayer = async (name: string) => {
-  increaseValue(roomRef, "players", "name", name, "attacked", 1);
+const attackingPlayer = async (character: string) => {
+  increaseValue(roomRef, "players", "character", character, "attacked", 1);
+  if (character === "FangZhen") {
+    increaseValue(roomRef, "players", "character", "MakeAWish", "attacked", 1);
+  }
 };
 
 const checkPlayer = async (name: string) => {
