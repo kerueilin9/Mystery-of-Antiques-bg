@@ -13,7 +13,7 @@
       <template #footer>
         <div class="flex justify-end mt-8">
           <div>
-            <n-button size="large" type="warning" @click="showModal = false">{{
+            <n-button size="large" type="warning" @click="handleNextRound()">{{
               `${roundOver ? "前往下一回合" : "返回"}`
             }}</n-button>
           </div>
@@ -71,12 +71,11 @@ const result = ref("");
 const isAbleToCheck = ref(true);
 const roundOver = ref(false);
 
-const getCurrentRoundAnimal = async () => {
+const getRoundAnimal = async (Round: number) => {
   try {
-    console.log(currentRound.value);
     const animalsCollectionRef = collection(
       roomRef,
-      `ReadomAnimalForRound${currentRound.value}`
+      `ReadomAnimalForRound${Round}`
     );
     const querySnapshot = await getDocs(animalsCollectionRef);
     const fetchedAnimals: SelectOption[] = [];
@@ -148,16 +147,29 @@ const handleSubmit = async () => {
   }
 };
 
+const handleNextRound = async () => {
+  if (currentRound.value === 3) {
+    message.success("遊戲結束");
+  } else if (roundOver.value) {
+    await getRoundAnimal(currentRound.value + 1);
+    await increaseValue(db, "rooms", "roomId", roomId.value, "currentRound", 1);
+    await setPlayerRemain();
+    message.success(
+      `下一回合的動物${options.value[0].label}，${options.value[1].label}，${options.value[2].label}，${options.value[3].label}`,
+      { closable: true, duration: 0 }
+    );
+  }
+  showModal.value = false;
+  animal.value = null;
+};
+
 watch(
   () => showModal.value,
   (value) => {
     if (value === true) {
-      getCurrentRoundAnimal();
+      getRoundAnimal(currentRound.value);
       isAbleToCheck.value = true;
-    } else if (roundOver.value && value === false) {
-      increaseValue(db, "rooms", "roomId", roomId.value, "currentRound", 1);
-      setPlayerRemain();
-      animal.value = null;
+      roundOver.value = false;
     }
   }
 );
