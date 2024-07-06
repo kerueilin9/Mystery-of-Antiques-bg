@@ -53,7 +53,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { httpsCallable } from "firebase/functions";
 import { useRoute, useRouter } from "vue-router";
-import { FormRules } from "naive-ui";
+import { FormRules, useMessage } from "naive-ui";
 import { increaseValue } from "@/hooks/setFirebaseData";
 import { db, functions } from "@/firebaseConfig";
 import {
@@ -74,6 +74,7 @@ import { largerSize } from "naive-ui/es/_utils";
 
 const route = useRoute();
 const router = useRouter();
+const message = useMessage();
 
 const roomId = ref();
 roomId.value = route.params.roomId;
@@ -192,6 +193,11 @@ const setFourRandomAnimals = async () => {
         );
       }
       console.log(fourRandomAnimals);
+      if (i === 1)
+        message.success(
+          `第一回合的動物${fourRandomAnimals[0].name}，${fourRandomAnimals[1].name}，${fourRandomAnimals[2].name}，${fourRandomAnimals[3].name}`,
+          { closable: true, duration: 0 }
+        );
       animals.value = animals.value.filter(
         (item) =>
           !fourRandomAnimals.some((toRemove) => toRemove.name === item.name)
