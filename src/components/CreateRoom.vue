@@ -34,18 +34,18 @@ interface AnimalValue {
 
 function getRandomAnimals(): AnimalValue[] {
   const animals = [
-    "Rat",
-    "Ox",
-    "Tiger",
-    "Rabbit",
-    "Dragon",
-    "Snake",
-    "Horse",
-    "Goat",
-    "Monkey",
-    "Rooster",
-    "Dog",
-    "Pig",
+    "鼠",
+    "牛",
+    "虎",
+    "兔",
+    "龍",
+    "蛇",
+    "馬",
+    "羊",
+    "猴",
+    "雞",
+    "狗",
+    "豬",
   ];
 
   // 動物初始化

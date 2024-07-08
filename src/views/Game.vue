@@ -1,30 +1,30 @@
 <template>
-  <div class="w-10/12 max-w-sm mt-28 mx-auto text-center">
+  <div class="w-10/12 max-w-sm mt-8 mx-auto text-center">
     <p class="text-3xl">房號：{{ roomId }}</p>
-    <div class="flex flex-col h-auto justify-around">
+    <div class="flex flex-col h-auto justify-around h-3/5 mt-8">
       <n-button
-        class="text-4xl h-14 mt-8"
+        class="text-4xl h-14"
         type="primary"
         size="large"
         @click="showTeammate()"
         >查看隊友</n-button
       >
       <n-button
-        class="text-4xl h-14 mt-8"
+        class="text-4xl h-14"
         type="primary"
         size="large"
         @click="showCheckModal()"
         >鑑定古董</n-button
       >
       <n-button
-        class="text-4xl h-14 mt-8"
+        class="text-4xl h-14"
         type="primary"
         size="large"
         @click="showSkillModal()"
         >使用技能</n-button
       >
       <n-button
-        class="text-4xl h-14 mt-8"
+        class="text-4xl h-14"
         type="primary"
         size="large"
         @click="showSelectModal()"
@@ -32,7 +32,7 @@
       >
       <n-button
         v-if="host"
-        class="text-4xl h-14 mt-8"
+        class="text-4xl h-14"
         type="warning"
         size="large"
         @click="showVoteModal()"
@@ -41,7 +41,7 @@
     </div>
     <div class="flex flex-col items-center">
       <n-button
-        @click=""
+        @click="showRecordModal()"
         circle
         class="w-20 h-20 absolute bottom-20"
         dashed
@@ -70,6 +70,11 @@
       v-model:currentRound="currentRound"
       v-model:playerData="playerData"
     />
+    <RecordModal
+      v-model:showModal="isRecordModal"
+      v-model:currentRound="currentRound"
+      v-model:playerData="playerData"
+    />
   </div>
 </template>
 
@@ -91,6 +96,7 @@ import CheckAntiquesModal from "@/components/CheckAntiquesModal.vue";
 import SelectModal from "@/components/SelectModal.vue";
 import SkillModal from "@/components/SkillModal.vue";
 import VoteModal from "@/components/VoteModal.vue";
+import RecordModal from "@/components/RecordModal.vue";
 import { useMessage } from "naive-ui";
 
 const route = useRoute();
@@ -115,6 +121,7 @@ const isSelectModal = ref(false);
 const isCheckModal = ref(false);
 const isSkillModal = ref(false);
 const isVoteModal = ref(false);
+const isRecordModal = ref(false);
 const playerData = ref();
 const character = ref("");
 
@@ -230,6 +237,12 @@ const showVoteModal = async () => {
   } else {
     message.warning("還有玩家未行動");
   }
+};
+
+const showRecordModal = async () => {
+  playerData.value = await getPlayerData();
+  currentRound.value = await getCurrentRound();
+  isRecordModal.value = true;
 };
 
 onMounted(async () => {});

@@ -1,50 +1,57 @@
 <template>
-  <div class="w-10/12 max-w-sm mt-28 mx-auto text-center">
+  <div class="w-10/12 max-w-sm text-center mt-8">
     <p class="text-3xl">房號：{{ roomId }}</p>
-    <n-card header-style="font-size: 32px" title="玩家資料" class="mt-8">
-      <n-form
-        class="text-center"
-        ref="basicFormRef"
-        require-mark-placement="left"
-        :rules="basicRules"
-        :model="basicForm"
-      >
-        <n-form-item path="name" label="玩家暱稱" label-style="font-size: 24px">
-          <n-input
-            size="large"
-            class="w-full text-xl"
-            :show-button="false"
-            v-model:value="basicForm.name"
-            placeholder="請填參與玩家都知道的暱稱"
-          />
-        </n-form-item>
-        <n-form-item
-          path="character"
-          label="角色"
-          label-style="font-size: 24px"
+    <div class="mt-28">
+      <n-card header-style="font-size: 32px" title="玩家資料">
+        <n-form
+          class="text-center"
+          ref="basicFormRef"
+          require-mark-placement="left"
+          :rules="basicRules"
+          :model="basicForm"
         >
-          <n-select
-            size="large"
-            class="w-full custom-select-font-size"
-            v-model:value="basicForm.character"
-            :options="characterOptions"
-            placeholder="選取抽到的角色"
-          />
-        </n-form-item>
-      </n-form>
-    </n-card>
-    <section class="flex gap-2 flex-wrap mt-2 justify-center">
-      <router-link to="/Mystery-of-Antiques-bg/">
-        <n-button class="text-2xl" size="large">返回</n-button>
-      </router-link>
-      <n-button
-        class="text-2xl"
-        size="large"
-        type="primary"
-        @click="handleSubmit()"
-        >{{ start }}</n-button
-      >
-    </section>
+          <n-form-item
+            path="name"
+            label="玩家暱稱"
+            label-style="font-size: 24px"
+          >
+            <n-input
+              size="large"
+              class="w-full text-xl"
+              :show-button="false"
+              v-model:value="basicForm.name"
+              placeholder="請填參與玩家都知道的暱稱"
+            />
+          </n-form-item>
+          <n-form-item
+            path="character"
+            label="角色"
+            label-style="font-size: 24px"
+          >
+            <n-select
+              size="large"
+              class="w-full custom-select-font-size"
+              v-model:value="basicForm.character"
+              :options="characterOptions"
+              placeholder="選取抽到的角色"
+            />
+          </n-form-item>
+        </n-form>
+      </n-card>
+      <section class="flex gap-2 flex-wrap mt-2 justify-center">
+        <router-link to="/Mystery-of-Antiques-bg/">
+          <n-button class="text-2xl" size="large">返回</n-button>
+        </router-link>
+        <n-button
+          class="text-2xl"
+          size="large"
+          type="primary"
+          @click="handleSubmit()"
+          >{{ start }}</n-button
+        >
+      </section>
+    </div>
+
     <SelectModal v-model:showModal="showSelectModal" :name="basicForm.name" />
   </div>
 </template>
@@ -195,7 +202,7 @@ const setFourRandomAnimals = async () => {
       console.log(fourRandomAnimals);
       if (i === 1)
         message.success(
-          `第一回合的動物${fourRandomAnimals[0].name}，${fourRandomAnimals[1].name}，${fourRandomAnimals[2].name}，${fourRandomAnimals[3].name}`,
+          `第一回合的動物為 ${fourRandomAnimals[0].name}，${fourRandomAnimals[1].name}，${fourRandomAnimals[2].name}，${fourRandomAnimals[3].name}`,
           { closable: true, duration: 0 }
         );
       animals.value = animals.value.filter(
