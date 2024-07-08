@@ -52,7 +52,11 @@ import {
 import { SelectOption, useMessage } from "naive-ui";
 import { useRoute, useRouter } from "vue-router";
 import { Animal, Player } from "@/types";
-import { increaseValue, setValue } from "@/hooks/setFirebaseData";
+import {
+  increaseValue,
+  increaseValueWithDB,
+  setValue,
+} from "@/hooks/setFirebaseData";
 const route = useRoute();
 const router = useRouter();
 const message = useMessage();
@@ -127,6 +131,19 @@ const handleSubmit = async () => {
     resultAnimal = currentRoundAnimals.value.filter((item) => {
       return checkAnimals.some((remain) => remain === item.label);
     });
+
+    for (let i = 0; i < 2; i++) {
+      if (Number(resultAnimal[i].value) >= 0) {
+        resultAnimal[i].value
+          ? await increaseValueWithDB(roomId.value, "score", 1)
+          : await increaseValueWithDB(roomId.value, "score", -1);
+      } else {
+        resultAnimal[i].value === -1
+          ? await increaseValueWithDB(roomId.value, "score", 1)
+          : await increaseValueWithDB(roomId.value, "score", -1);
+      }
+    }
+
     let strArray: string[] = [];
     strArray.push(`${resultAnimal[0].label}被掩蓋了`);
     strArray.push(

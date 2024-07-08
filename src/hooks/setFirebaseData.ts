@@ -1,3 +1,4 @@
+import { db } from "@/firebaseConfig";
 import {
   DocumentData,
   DocumentReference,
@@ -29,6 +30,22 @@ const increaseValue = async (
   await Promise.all(updatePromises);
 };
 
+const increaseValueWithDB = async (
+  roomId: number,
+  targetItem: string,
+  increase: number
+) => {
+  const roomsRef = collection(db, "rooms");
+  let q = query(roomsRef, where("roomId", "==", roomId));
+  let snapshot = await getDocs(q);
+
+  let updatePromises = snapshot.docs.map((docSnapshot) =>
+    updateDoc(docSnapshot.ref, { [targetItem]: increment(increase) })
+  );
+
+  await Promise.all(updatePromises);
+};
+
 const setValue = async (
   dataref: any,
   collectionName: string,
@@ -46,4 +63,4 @@ const setValue = async (
   await Promise.all(updatePromises1);
 };
 
-export { increaseValue, setValue };
+export { increaseValue, increaseValueWithDB, setValue };
