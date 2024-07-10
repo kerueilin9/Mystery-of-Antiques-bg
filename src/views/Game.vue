@@ -1,7 +1,7 @@
 <template>
   <div class="w-10/12 max-w-sm mt-8 mx-auto text-center">
     <p class="text-3xl">房號：{{ roomId }}</p>
-    <div class="flex flex-col h-auto justify-around h-3/5 mt-8">
+    <div class="flex flex-col justify-around h-3/5 mt-8">
       <n-button
         class="text-4xl h-14"
         type="primary"
@@ -82,7 +82,7 @@
 import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { CreateOutline } from "@vicons/ionicons5";
-import { db } from "@/firebaseConfig";
+import { db, realtimeDB } from "@/firebaseConfig";
 import {
   setDoc,
   doc,
@@ -98,6 +98,17 @@ import SkillModal from "@/components/SkillModal.vue";
 import VoteModal from "@/components/VoteModal.vue";
 import RecordModal from "@/components/RecordModal.vue";
 import { useMessage } from "naive-ui";
+import {
+  push,
+  set,
+  ref as fireRef,
+  orderByChild,
+  equalTo,
+  get,
+  update,
+  query as rtQuery,
+  onValue,
+} from "firebase/database";
 
 const route = useRoute();
 const router = useRouter();
@@ -245,5 +256,31 @@ const showRecordModal = async () => {
   isRecordModal.value = true;
 };
 
-onMounted(async () => {});
+const listenRound = async (roomId: string) => {
+  try {
+    const roomsRef = fireRef(realtimeDB, "rooms");
+    const roomQuery = rtQuery(
+      roomsRef,
+      orderByChild("roomId"),
+      equalTo(roomId)
+    );
+
+    onValue(roomQuery, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const roomKey = Object.keys(data)[0]; // 获取第一个结果的 key
+        const currentRound = data[roomKey].currentRound || 0;
+        console.log(currentRound);
+      } else {
+        console.log("roomId not found");
+      }
+    });
+  } catch (error) {
+    console.error("Error querying roomId", error);
+  }
+};
+
+onMounted(async () => {
+  await listenRound(roomId.value);
+});
 </script>

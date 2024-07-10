@@ -1,4 +1,14 @@
-import { db } from "@/firebaseConfig";
+import { db, realtimeDB } from "@/firebaseConfig";
+import {
+  push,
+  set,
+  ref as fireRef,
+  orderByChild,
+  equalTo,
+  get,
+  update,
+  query as rtQuery,
+} from "firebase/database";
 import {
   DocumentData,
   DocumentReference,
@@ -63,4 +73,39 @@ const setValue = async (
   await Promise.all(updatePromises1);
 };
 
-export { increaseValue, increaseValueWithDB, setValue };
+const setRTValue = async (path: string, value: string | number | object) => {
+  const dataRef = fireRef(realtimeDB, path);
+  const newItemRef = push(dataRef);
+  await set(newItemRef, value);
+};
+
+const setRTRoomValue = async (
+  roomId: string,
+  value: string | number | object
+) => {
+  const roomsRef = fireRef(realtimeDB, "/rooms");
+  const roomQuery = rtQuery(roomsRef, orderByChild("roomId"), equalTo(roomId));
+  const snapshot = await get(roomQuery);
+
+  if (snapshot.exists()) {
+    const data = snapshot.val();
+    const roomKey = Object.keys(data)[0];
+    const currentRound = data[roomKey].currentRound || 0;
+    const newRound = currentRound + value;
+
+    const roundRef = fireRef(realtimeDB, `/rooms/${roomKey}`);
+    update(roundRef, { currentRound: newRound }).then(() => {
+      console.log("Round incremented successfully!");
+    });
+  } else {
+    console.log("roomId not found");
+  }
+};
+
+export {
+  increaseValue,
+  increaseValueWithDB,
+  setValue,
+  setRTValue,
+  setRTRoomValue,
+};

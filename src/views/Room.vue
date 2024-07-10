@@ -61,8 +61,12 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { httpsCallable } from "firebase/functions";
 import { useRoute, useRouter } from "vue-router";
 import { FormRules, useMessage } from "naive-ui";
-import { increaseValue } from "@/hooks/setFirebaseData";
-import { db, functions } from "@/firebaseConfig";
+import {
+  increaseValue,
+  setRTRoomValue,
+  setRTValue,
+} from "@/hooks/setFirebaseData";
+import { db, functions, realtimeDB } from "@/firebaseConfig";
 import {
   setDoc,
   doc,
@@ -78,6 +82,7 @@ import {
 } from "firebase/firestore";
 import SelectModal from "@/components/SelectModal.vue";
 import { largerSize } from "naive-ui/es/_utils";
+import { push, set } from "firebase/database";
 
 const route = useRoute();
 const router = useRouter();
@@ -226,18 +231,6 @@ const shuffle = (array) => {
   return array;
 };
 
-const addCurrentRound = async () => {
-  const roomsRef = collection(roomRef, "rooms");
-  let q = query(roomsRef, where("roomId", "==", roomId.value));
-  let snapshot = await getDocs(q);
-
-  let updatePromises = snapshot.docs.map((docSnapshot) =>
-    updateDoc(docSnapshot.ref, { currentRound: increment(1) })
-  );
-
-  await Promise.all(updatePromises);
-};
-
 const getRandomNumber = (): number => {
   return Math.floor(Math.random() * 3) + 1;
 };
@@ -268,6 +261,7 @@ const handleSubmit = async () => {
         "currentRound",
         1
       );
+      await setRTRoomValue(roomId.value, 1);
       await getAnimals();
       await setFourRandomAnimals();
       gameStart.value = 1;
@@ -279,7 +273,9 @@ const handleSubmit = async () => {
         query: { host: host.value ? 1 : 0, player: basicForm.value.name },
       });
     }
-  } catch (err) {}
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 onBeforeUnmount(async () => {
