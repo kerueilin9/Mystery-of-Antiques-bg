@@ -12,7 +12,8 @@
 
 <script setup lang="ts">
 import { db } from "@/firebaseConfig";
-import { collection, addDoc, setDoc, doc } from "firebase/firestore";
+import { setRTRoomValue, setRTValue } from "@/hooks/setFirebaseData";
+import { setDoc, doc } from "firebase/firestore";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
@@ -34,18 +35,18 @@ interface AnimalValue {
 
 function getRandomAnimals(): AnimalValue[] {
   const animals = [
-    "Rat",
-    "Ox",
-    "Tiger",
-    "Rabbit",
-    "Dragon",
-    "Snake",
-    "Horse",
-    "Goat",
-    "Monkey",
-    "Rooster",
-    "Dog",
-    "Pig",
+    "鼠",
+    "牛",
+    "虎",
+    "兔",
+    "龍",
+    "蛇",
+    "馬",
+    "羊",
+    "猴",
+    "雞",
+    "狗",
+    "豬",
   ];
 
   // 動物初始化
@@ -77,8 +78,12 @@ const createRoom = async () => {
     await setDoc(doc(db, "rooms", roomId), {
       roomId: roomId,
       currentRound: 0,
+      score: 0,
+      voteLaoChaofeng: 0,
       createdAt: new Date(),
     });
+    await setRTValue("/rooms", { roomId: roomId });
+    await setRTRoomValue(roomId, "playerCount", 1);
     const randomAnimals = getRandomAnimals();
     const roomRef = doc(db, "rooms", roomId);
     for (const animal of randomAnimals) {

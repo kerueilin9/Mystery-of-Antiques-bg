@@ -1,30 +1,30 @@
 <template>
-  <div class="w-10/12 max-w-sm mt-28 mx-auto text-center">
+  <div class="w-10/12 max-w-sm mt-8 mx-auto text-center">
     <p class="text-3xl">房號：{{ roomId }}</p>
-    <div class="flex flex-col h-auto justify-around">
+    <div class="flex flex-col justify-around h-3/5 mt-8">
       <n-button
-        class="text-4xl h-14 mt-8"
+        class="text-4xl h-14"
         type="primary"
         size="large"
         @click="showTeammate()"
         >查看隊友</n-button
       >
       <n-button
-        class="text-4xl h-14 mt-8"
+        class="text-4xl h-14"
         type="primary"
         size="large"
         @click="showCheckModal()"
         >鑑定古董</n-button
       >
       <n-button
-        class="text-4xl h-14 mt-8"
+        class="text-4xl h-14"
         type="primary"
         size="large"
         @click="showSkillModal()"
         >使用技能</n-button
       >
       <n-button
-        class="text-4xl h-14 mt-8"
+        class="text-4xl h-14"
         type="primary"
         size="large"
         @click="showSelectModal()"
@@ -32,7 +32,7 @@
       >
       <n-button
         v-if="host"
-        class="text-4xl h-14 mt-8"
+        class="text-4xl h-14"
         type="warning"
         size="large"
         @click="showVoteModal()"
@@ -41,7 +41,7 @@
     </div>
     <div class="flex flex-col items-center">
       <n-button
-        @click=""
+        @click="showRecordModal()"
         circle
         class="w-20 h-20 absolute bottom-20"
         dashed
@@ -70,6 +70,11 @@
       v-model:currentRound="currentRound"
       v-model:playerData="playerData"
     />
+    <RecordModal
+      v-model:showModal="isRecordModal"
+      v-model:currentRound="currentRound"
+      v-model:playerData="playerData"
+    />
   </div>
 </template>
 
@@ -77,9 +82,8 @@
 import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { CreateOutline } from "@vicons/ionicons5";
-import { db } from "@/firebaseConfig";
+import { db, realtimeDB } from "@/firebaseConfig";
 import {
-  setDoc,
   doc,
   query,
   collection,
@@ -91,8 +95,17 @@ import CheckAntiquesModal from "@/components/CheckAntiquesModal.vue";
 import SelectModal from "@/components/SelectModal.vue";
 import SkillModal from "@/components/SkillModal.vue";
 import VoteModal from "@/components/VoteModal.vue";
+import RecordModal from "@/components/RecordModal.vue";
 import { useMessage } from "naive-ui";
+import {
+  ref as fireRef,
+  orderByChild,
+  equalTo,
+  query as rtQuery,
+  onValue,
+} from "firebase/database";
 
+const path = "/Mystery-of-Antiques-bg";
 const route = useRoute();
 const router = useRouter();
 const message = useMessage();
@@ -110,15 +123,26 @@ const host = computed(() => {
 });
 
 const currentRound = ref(0);
-const turn = ref(1);
 const isSelectModal = ref(false);
 const isCheckModal = ref(false);
 const isSkillModal = ref(false);
 const isVoteModal = ref(false);
+const isRecordModal = ref(false);
 const playerData = ref();
-const character = ref("");
 
 const teammates = ["LaoChaofeng", "MedicineIsNot"];
+
+const init = async (round: number) => {
+  currentRound.value = round;
+  if (round === 4) {
+    router.push({
+      path: `${path}/vote/${roomId.value}`,
+      query: {
+        ...route.query,
+      },
+    });
+  }
+};
 
 const getRemainPlayerCount = async (): Promise<number> => {
   try {
@@ -131,7 +155,7 @@ const getRemainPlayerCount = async (): Promise<number> => {
         ++remainPlayerCount;
       }
     });
-    console.log(remainPlayerCount);
+    console.log("剩餘玩家人數: " + remainPlayerCount);
     return remainPlayerCount;
   } catch (err) {
     return -1;
@@ -164,19 +188,6 @@ const getPlayerDataByCharacter = async (character: string) => {
   } catch (err) {}
 };
 
-const getCurrentRound = async () => {
-  try {
-    const q = query(
-      collection(db, "rooms"),
-      where("roomId", "==", roomId.value)
-    );
-    const querySnapshot = await getDocs(q);
-    const docSnapshot = querySnapshot.docs[0];
-    const roomData = docSnapshot.data() as DocumentData;
-    return roomData.currentRound;
-  } catch (err) {}
-};
-
 const showTeammate = async () => {
   const playerCharacter = await getPlayerData();
   if (!teammates.includes(playerCharacter.character)) {
@@ -195,7 +206,6 @@ const showCheckModal = async () => {
   if (playerData.value.character === "FangZhen")
     message.warning("你沒有鑑寶能力");
   else if (playerData.value.myTurn === 1) {
-    currentRound.value = await getCurrentRound();
     isCheckModal.value = true;
   } else {
     message.warning("還沒有到你的回合");
@@ -205,8 +215,6 @@ const showCheckModal = async () => {
 const showSkillModal = async () => {
   playerData.value = await getPlayerData();
   if (playerData.value.myTurn === 1) {
-    character.value = playerData.value.character;
-    currentRound.value = await getCurrentRound();
     isSkillModal.value = true;
   } else {
     message.warning("還沒有到你的回合");
@@ -225,12 +233,43 @@ const showSelectModal = async () => {
 const showVoteModal = async () => {
   playerData.value = await getPlayerData();
   if ((await getRemainPlayerCount()) === 0) {
-    currentRound.value = await getCurrentRound();
     isVoteModal.value = true;
   } else {
     message.warning("還有玩家未行動");
   }
 };
 
-onMounted(async () => {});
+const showRecordModal = async () => {
+  playerData.value = await getPlayerData();
+  isRecordModal.value = true;
+};
+
+const listenRound = async (roomId: string) => {
+  try {
+    const roomsRef = fireRef(realtimeDB, "rooms");
+    const roomQuery = rtQuery(
+      roomsRef,
+      orderByChild("roomId"),
+      equalTo(roomId)
+    );
+
+    onValue(roomQuery, async (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const roomKey = Object.keys(data)[0]; // 获取第一个结果的 key
+        const currentRound = data[roomKey].currentRound || 0;
+        console.log(currentRound);
+        await init(currentRound);
+      } else {
+        console.log("roomId not found");
+      }
+    });
+  } catch (error) {
+    console.error("Error querying roomId", error);
+  }
+};
+
+onMounted(async () => {
+  await listenRound(roomId.value);
+});
 </script>

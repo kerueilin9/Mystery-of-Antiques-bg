@@ -52,7 +52,12 @@ import {
 import { SelectOption, useMessage } from "naive-ui";
 import { useRoute, useRouter } from "vue-router";
 import { Animal, Player } from "@/types";
-import { increaseValue, setValue } from "@/hooks/setFirebaseData";
+import {
+  increaseValue,
+  increaseValueWithDB,
+  setRTRoomValue,
+  setValue,
+} from "@/hooks/setFirebaseData";
 const route = useRoute();
 const router = useRouter();
 const message = useMessage();
@@ -127,6 +132,19 @@ const handleSubmit = async () => {
     resultAnimal = currentRoundAnimals.value.filter((item) => {
       return checkAnimals.some((remain) => remain === item.label);
     });
+
+    for (let i = 0; i < 2; i++) {
+      if (Number(resultAnimal[i].value) >= 0) {
+        resultAnimal[i].value
+          ? await increaseValueWithDB(roomId.value, "score", 1)
+          : await increaseValueWithDB(roomId.value, "score", -1);
+      } else {
+        resultAnimal[i].value === -1
+          ? await increaseValueWithDB(roomId.value, "score", 1)
+          : await increaseValueWithDB(roomId.value, "score", -1);
+      }
+    }
+
     let strArray: string[] = [];
     strArray.push(`${resultAnimal[0].label}被掩蓋了`);
     strArray.push(
@@ -148,14 +166,16 @@ const handleSubmit = async () => {
 };
 
 const handleNextRound = async () => {
-  if (currentRound.value === 3) {
-    message.success("遊戲結束");
+  if (roundOver.value && currentRound.value === 3) {
+    message.success("鑑寶環節結束");
+    await setRTRoomValue(roomId.value, "currentRound", 1);
   } else if (roundOver.value) {
     await getRoundAnimal(currentRound.value + 1);
     await increaseValue(db, "rooms", "roomId", roomId.value, "currentRound", 1);
+    await setRTRoomValue(roomId.value, "currentRound", 1);
     await setPlayerRemain();
     message.success(
-      `下一回合的動物${options.value[0].label}，${options.value[1].label}，${options.value[2].label}，${options.value[3].label}`,
+      `下一回合的動物為 ${options.value[0].label}，${options.value[1].label}，${options.value[2].label}，${options.value[3].label}`,
       { closable: true, duration: 0 }
     );
   }

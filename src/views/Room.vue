@@ -1,50 +1,58 @@
 <template>
-  <div class="w-10/12 max-w-sm mt-28 mx-auto text-center">
+  <div class="w-10/12 max-w-sm text-center mt-8">
     <p class="text-3xl">房號：{{ roomId }}</p>
-    <n-card header-style="font-size: 32px" title="玩家資料" class="mt-8">
-      <n-form
-        class="text-center"
-        ref="basicFormRef"
-        require-mark-placement="left"
-        :rules="basicRules"
-        :model="basicForm"
-      >
-        <n-form-item path="name" label="玩家暱稱" label-style="font-size: 24px">
-          <n-input
-            size="large"
-            class="w-full text-xl"
-            :show-button="false"
-            v-model:value="basicForm.name"
-            placeholder="請填參與玩家都知道的暱稱"
-          />
-        </n-form-item>
-        <n-form-item
-          path="character"
-          label="角色"
-          label-style="font-size: 24px"
+    <div class="mt-28">
+      <n-card header-style="font-size: 32px" title="玩家資料">
+        <n-form
+          class="text-center"
+          ref="basicFormRef"
+          require-mark-placement="left"
+          :rules="basicRules"
+          :model="basicForm"
         >
-          <n-select
-            size="large"
-            class="w-full custom-select-font-size"
-            v-model:value="basicForm.character"
-            :options="characterOptions"
-            placeholder="選取抽到的角色"
-          />
-        </n-form-item>
-      </n-form>
-    </n-card>
-    <section class="flex gap-2 flex-wrap mt-2 justify-center">
-      <router-link to="/Mystery-of-Antiques-bg/">
-        <n-button class="text-2xl" size="large">返回</n-button>
-      </router-link>
-      <n-button
-        class="text-2xl"
-        size="large"
-        type="primary"
-        @click="handleSubmit()"
-        >{{ start }}</n-button
-      >
-    </section>
+          <n-form-item
+            path="name"
+            label="玩家暱稱"
+            label-style="font-size: 24px"
+          >
+            <n-input
+              size="large"
+              class="w-full text-xl"
+              :show-button="false"
+              v-model:value="basicForm.name"
+              placeholder="請填參與玩家都知道的暱稱"
+            />
+          </n-form-item>
+          <n-form-item
+            path="character"
+            label="角色"
+            label-style="font-size: 24px"
+          >
+            <n-select
+              size="large"
+              class="w-full custom-select-font-size"
+              v-model:value="basicForm.character"
+              :options="characterOptions"
+              placeholder="選取抽到的角色"
+            />
+          </n-form-item>
+        </n-form>
+      </n-card>
+      <section class="flex gap-2 flex-wrap mt-2 justify-center">
+        <router-link to="/Mystery-of-Antiques-bg/">
+          <n-button class="text-2xl" size="large">返回</n-button>
+        </router-link>
+        <n-button
+          class="text-2xl"
+          size="large"
+          type="primary"
+          @click="handleSubmit()"
+          >{{ start }}</n-button
+        >
+      </section>
+      <div class="text-2xl mt-16">房內人數：{{ playerCount }}</div>
+    </div>
+
     <SelectModal v-model:showModal="showSelectModal" :name="basicForm.name" />
   </div>
 </template>
@@ -54,23 +62,23 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { httpsCallable } from "firebase/functions";
 import { useRoute, useRouter } from "vue-router";
 import { FormRules, useMessage } from "naive-ui";
-import { increaseValue } from "@/hooks/setFirebaseData";
-import { db, functions } from "@/firebaseConfig";
+import { increaseValue, setRTRoomValue } from "@/hooks/setFirebaseData";
+import { db, functions, realtimeDB } from "@/firebaseConfig";
 import {
   setDoc,
   doc,
   collection,
   getDocs,
-  writeBatch,
-  query,
-  where,
-  updateDoc,
-  increment,
   DocumentData,
-  deleteDoc,
 } from "firebase/firestore";
+import {
+  ref as fireRef,
+  orderByChild,
+  equalTo,
+  query as rtQuery,
+  onValue,
+} from "firebase/database";
 import SelectModal from "@/components/SelectModal.vue";
-import { largerSize } from "naive-ui/es/_utils";
 
 const route = useRoute();
 const router = useRouter();
@@ -86,6 +94,7 @@ const showSelectModal = ref(false);
 const animals = ref<Animal[]>();
 const turn = ref(1);
 const gameStart = ref(0);
+const playerCount = ref(0);
 
 const characterOptions = [
   { label: "老朝奉", value: "LaoChaofeng" },
@@ -195,7 +204,7 @@ const setFourRandomAnimals = async () => {
       console.log(fourRandomAnimals);
       if (i === 1)
         message.success(
-          `第一回合的動物${fourRandomAnimals[0].name}，${fourRandomAnimals[1].name}，${fourRandomAnimals[2].name}，${fourRandomAnimals[3].name}`,
+          `第一回合的動物為 ${fourRandomAnimals[0].name}，${fourRandomAnimals[1].name}，${fourRandomAnimals[2].name}，${fourRandomAnimals[3].name}`,
           { closable: true, duration: 0 }
         );
       animals.value = animals.value.filter(
@@ -217,18 +226,6 @@ const shuffle = (array) => {
     [array[i], array[j]] = [array[j], array[i]];
   }
   return array;
-};
-
-const addCurrentRound = async () => {
-  const roomsRef = collection(roomRef, "rooms");
-  let q = query(roomsRef, where("roomId", "==", roomId.value));
-  let snapshot = await getDocs(q);
-
-  let updatePromises = snapshot.docs.map((docSnapshot) =>
-    updateDoc(docSnapshot.ref, { currentRound: increment(1) })
-  );
-
-  await Promise.all(updatePromises);
 };
 
 const getRandomNumber = (): number => {
@@ -261,19 +258,50 @@ const handleSubmit = async () => {
         "currentRound",
         1
       );
+      await setRTRoomValue(roomId.value, "currentRound", 1);
       await getAnimals();
       await setFourRandomAnimals();
       gameStart.value = 1;
       showSelectModal.value = true;
     } else {
       await setDoc(doc(roomRef, "players", basicForm.value.name), playerInfo);
+      await setRTRoomValue(roomId.value, "playerCount", 1);
       router.push({
         path: `${path}/game/${roomId.value}`,
         query: { host: host.value ? 1 : 0, player: basicForm.value.name },
       });
     }
-  } catch (err) {}
+  } catch (err) {
+    console.log(err);
+  }
 };
+
+const listenRound = async (roomId: string) => {
+  try {
+    const roomsRef = fireRef(realtimeDB, "rooms");
+    const roomQuery = rtQuery(
+      roomsRef,
+      orderByChild("roomId"),
+      equalTo(roomId)
+    );
+
+    onValue(roomQuery, async (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const roomKey = Object.keys(data)[0]; // 获取第一个结果的 key
+        playerCount.value = data[roomKey].playerCount || 0;
+      } else {
+        console.log("roomId not found");
+      }
+    });
+  } catch (error) {
+    console.error("Error querying roomId", error);
+  }
+};
+
+onMounted(async () => {
+  await listenRound(roomId.value);
+});
 
 onBeforeUnmount(async () => {
   try {
