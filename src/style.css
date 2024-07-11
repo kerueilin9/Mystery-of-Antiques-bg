@@ -34,17 +34,15 @@ body {
   height: 100%;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    background: url("") no-repeat center center fixed;
-    background-color: #eeeeee;
-    background-size: cover;
-    height: 100%;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+:root {
+  background: url("") no-repeat center center fixed;
+  background-color: #eeeeee;
+  background-size: cover;
+  height: 100%;
+}
+a:hover {
+  color: #747bff;
+}
+button {
+  background-color: #f9f9f9;
 }
