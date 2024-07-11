@@ -122,7 +122,7 @@ const setPlayerRemain = async () => {
 
 const handleSubmit = async () => {
   let resultAnimal: SelectOption[] = null;
-  if (animal.value.length === 0 || animal.value === null) {
+  if (animal.value === null || animal.value.length === 0) {
     message.warning("請選擇至少一隻動物");
   } else {
     const checkAnimals =
