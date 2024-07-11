@@ -99,17 +99,14 @@ import VoteModal from "@/components/VoteModal.vue";
 import RecordModal from "@/components/RecordModal.vue";
 import { useMessage } from "naive-ui";
 import {
-  push,
-  set,
   ref as fireRef,
   orderByChild,
   equalTo,
-  get,
-  update,
   query as rtQuery,
   onValue,
 } from "firebase/database";
 
+const path = "/Mystery-of-Antiques-bg";
 const route = useRoute();
 const router = useRouter();
 const message = useMessage();
@@ -137,6 +134,18 @@ const playerData = ref();
 const character = ref("");
 
 const teammates = ["LaoChaofeng", "MedicineIsNot"];
+
+const init = async (round: number) => {
+  currentRound.value = round;
+  if (round === 4) {
+    router.push({
+      path: `${path}/vote/${roomId.value}`,
+      query: {
+        ...route.query,
+      },
+    });
+  }
+};
 
 const getRemainPlayerCount = async (): Promise<number> => {
   try {
@@ -213,7 +222,7 @@ const showCheckModal = async () => {
   if (playerData.value.character === "FangZhen")
     message.warning("你沒有鑑寶能力");
   else if (playerData.value.myTurn === 1) {
-    currentRound.value = await getCurrentRound();
+    // currentRound.value = await getCurrentRound();
     isCheckModal.value = true;
   } else {
     message.warning("還沒有到你的回合");
@@ -224,7 +233,7 @@ const showSkillModal = async () => {
   playerData.value = await getPlayerData();
   if (playerData.value.myTurn === 1) {
     character.value = playerData.value.character;
-    currentRound.value = await getCurrentRound();
+    // currentRound.value = await getCurrentRound();
     isSkillModal.value = true;
   } else {
     message.warning("還沒有到你的回合");
@@ -243,7 +252,7 @@ const showSelectModal = async () => {
 const showVoteModal = async () => {
   playerData.value = await getPlayerData();
   if ((await getRemainPlayerCount()) === 0) {
-    currentRound.value = await getCurrentRound();
+    // currentRound.value = await getCurrentRound();
     isVoteModal.value = true;
   } else {
     message.warning("還有玩家未行動");
@@ -252,7 +261,7 @@ const showVoteModal = async () => {
 
 const showRecordModal = async () => {
   playerData.value = await getPlayerData();
-  currentRound.value = await getCurrentRound();
+  // currentRound.value = await getCurrentRound();
   isRecordModal.value = true;
 };
 
@@ -265,12 +274,13 @@ const listenRound = async (roomId: string) => {
       equalTo(roomId)
     );
 
-    onValue(roomQuery, (snapshot) => {
+    onValue(roomQuery, async (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
         const roomKey = Object.keys(data)[0]; // 获取第一个结果的 key
         const currentRound = data[roomKey].currentRound || 0;
         console.log(currentRound);
+        await init(currentRound);
       } else {
         console.log("roomId not found");
       }

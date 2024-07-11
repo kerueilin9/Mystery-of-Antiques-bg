@@ -166,12 +166,13 @@ const handleSubmit = async () => {
 };
 
 const handleNextRound = async () => {
-  if (currentRound.value === 3) {
+  if (roundOver.value && currentRound.value === 3) {
     message.success("鑑寶環節結束");
+    await setRTRoomValue(roomId.value, "currentRound", 1);
   } else if (roundOver.value) {
     await getRoundAnimal(currentRound.value + 1);
     await increaseValue(db, "rooms", "roomId", roomId.value, "currentRound", 1);
-    await setRTRoomValue(roomId.value, 1);
+    await setRTRoomValue(roomId.value, "currentRound", 1);
     await setPlayerRemain();
     message.success(
       `下一回合的動物為 ${options.value[0].label}，${options.value[1].label}，${options.value[2].label}，${options.value[3].label}`,

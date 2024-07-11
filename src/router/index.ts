@@ -29,10 +29,20 @@ export const GameRoute: RouteRecordRaw = {
   },
 };
 
+export const VoteRoute: RouteRecordRaw = {
+  path: `${path}/vote/:roomId`,
+  name: "Vote",
+  component: () => import("@/views/Vote.vue"),
+  meta: {
+    title: "鑑人環節",
+  },
+};
+
 export const constantRouter: RouteRecordRaw[] = [
   HomeRoute,
   RoomRoute,
   GameRoute,
+  VoteRoute,
 ];
 
 const router = createRouter({

@@ -81,6 +81,7 @@ const setRTValue = async (path: string, value: string | number | object) => {
 
 const setRTRoomValue = async (
   roomId: string,
+  target: string,
   value: string | number | object
 ) => {
   const roomsRef = fireRef(realtimeDB, "/rooms");
@@ -90,11 +91,11 @@ const setRTRoomValue = async (
   if (snapshot.exists()) {
     const data = snapshot.val();
     const roomKey = Object.keys(data)[0];
-    const currentRound = data[roomKey].currentRound || 0;
-    const newRound = currentRound + value;
+    const itemValue = data[roomKey][target] || 0;
+    const newRound = itemValue + value;
 
     const roundRef = fireRef(realtimeDB, `/rooms/${roomKey}`);
-    update(roundRef, { currentRound: newRound }).then(() => {
+    update(roundRef, { [target]: newRound }).then(() => {
       console.log("Round incremented successfully!");
     });
   } else {

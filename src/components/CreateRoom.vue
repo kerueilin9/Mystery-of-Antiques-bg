@@ -11,10 +11,9 @@
 </template>
 
 <script setup lang="ts">
-import { db, realtimeDB } from "@/firebaseConfig";
-import { setRTValue } from "@/hooks/setFirebaseData";
-import { push, set, ref as fireRef } from "firebase/database";
-import { collection, addDoc, setDoc, doc } from "firebase/firestore";
+import { db } from "@/firebaseConfig";
+import { setRTRoomValue, setRTValue } from "@/hooks/setFirebaseData";
+import { setDoc, doc } from "firebase/firestore";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
@@ -80,9 +79,11 @@ const createRoom = async () => {
       roomId: roomId,
       currentRound: 0,
       score: 0,
+      voteLaoChaofeng: 0,
       createdAt: new Date(),
     });
     await setRTValue("/rooms", { roomId: roomId });
+    await setRTRoomValue(roomId, "playerCount", 1);
     const randomAnimals = getRandomAnimals();
     const roomRef = doc(db, "rooms", roomId);
     for (const animal of randomAnimals) {

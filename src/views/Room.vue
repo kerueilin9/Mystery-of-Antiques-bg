@@ -50,6 +50,7 @@
           >{{ start }}</n-button
         >
       </section>
+      <div class="text-2xl mt-16">房內人數：{{ playerCount }}</div>
     </div>
 
     <SelectModal v-model:showModal="showSelectModal" :name="basicForm.name" />
@@ -61,25 +62,22 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { httpsCallable } from "firebase/functions";
 import { useRoute, useRouter } from "vue-router";
 import { FormRules, useMessage } from "naive-ui";
-import {
-  increaseValue,
-  setRTRoomValue,
-  setRTValue,
-} from "@/hooks/setFirebaseData";
+import { increaseValue, setRTRoomValue } from "@/hooks/setFirebaseData";
 import { db, functions, realtimeDB } from "@/firebaseConfig";
 import {
   setDoc,
   doc,
   collection,
   getDocs,
-  writeBatch,
-  query,
-  where,
-  updateDoc,
-  increment,
   DocumentData,
-  deleteDoc,
 } from "firebase/firestore";
+import {
+  ref as fireRef,
+  orderByChild,
+  equalTo,
+  query as rtQuery,
+  onValue,
+} from "firebase/database";
 import SelectModal from "@/components/SelectModal.vue";
 import { largerSize } from "naive-ui/es/_utils";
 import { push, set } from "firebase/database";
@@ -98,6 +96,7 @@ const showSelectModal = ref(false);
 const animals = ref<Animal[]>();
 const turn = ref(1);
 const gameStart = ref(0);
+const playerCount = ref(0);
 
 const characterOptions = [
   { label: "老朝奉", value: "LaoChaofeng" },
@@ -261,13 +260,14 @@ const handleSubmit = async () => {
         "currentRound",
         1
       );
-      await setRTRoomValue(roomId.value, 1);
+      await setRTRoomValue(roomId.value, "currentRound", 1);
       await getAnimals();
       await setFourRandomAnimals();
       gameStart.value = 1;
       showSelectModal.value = true;
     } else {
       await setDoc(doc(roomRef, "players", basicForm.value.name), playerInfo);
+      await setRTRoomValue(roomId.value, "playerCount", 1);
       router.push({
         path: `${path}/game/${roomId.value}`,
         query: { host: host.value ? 1 : 0, player: basicForm.value.name },
@@ -277,6 +277,33 @@ const handleSubmit = async () => {
     console.log(err);
   }
 };
+
+const listenRound = async (roomId: string) => {
+  try {
+    const roomsRef = fireRef(realtimeDB, "rooms");
+    const roomQuery = rtQuery(
+      roomsRef,
+      orderByChild("roomId"),
+      equalTo(roomId)
+    );
+
+    onValue(roomQuery, async (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const roomKey = Object.keys(data)[0]; // 获取第一个结果的 key
+        playerCount.value = data[roomKey].playerCount || 0;
+      } else {
+        console.log("roomId not found");
+      }
+    });
+  } catch (error) {
+    console.error("Error querying roomId", error);
+  }
+};
+
+onMounted(async () => {
+  await listenRound(roomId.value);
+});
 
 onBeforeUnmount(async () => {
   try {
