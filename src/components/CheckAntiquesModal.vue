@@ -89,7 +89,6 @@ const truthSeers = ["JiYunfu", "MedicineIsNot", "ZhengGuoqu", "LaoChaofeng"];
 
 const getCurrentRoundAnimal = async () => {
   try {
-    console.log(currentRound.value);
     const animalsCollectionRef = collection(
       roomRef,
       `ReadomAnimalForRound${currentRound.value}`

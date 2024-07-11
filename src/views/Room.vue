@@ -79,8 +79,6 @@ import {
   onValue,
 } from "firebase/database";
 import SelectModal from "@/components/SelectModal.vue";
-import { largerSize } from "naive-ui/es/_utils";
-import { push, set } from "firebase/database";
 
 const route = useRoute();
 const router = useRouter();

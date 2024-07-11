@@ -43,17 +43,12 @@ import {
 } from "firebase/firestore";
 import { SelectOption, useMessage } from "naive-ui";
 import {
-  push,
-  set,
   ref as fireRef,
   orderByChild,
   equalTo,
-  get,
-  update,
   query as rtQuery,
   onValue,
 } from "firebase/database";
-import { AtSharp } from "@vicons/ionicons5";
 import { increaseValueWithDB, setRTRoomValue } from "@/hooks/setFirebaseData";
 
 const path = "/Mystery-of-Antiques-bg";
@@ -114,7 +109,6 @@ const getPlayers = async () => {
 
 const getPlayerData = async (name: string) => {
   try {
-    console.log(name);
     const q = query(collection(roomRef, "players"), where("name", "==", name));
     const querySnapshot = await getDocs(q);
     const docSnapshot = querySnapshot.docs[0];
@@ -141,8 +135,7 @@ const getPlayerDataByCharacter = async (character: string) => {
 };
 
 const LaoChaofengVote = async () => {
-  const votedPlayerTemp = await getPlayerData(votedPlayer.value);
-  if (votedPlayerTemp.character === "MakeAWish") {
+  if (votedPlayer.value === "MakeAWish") {
     await increaseValueWithDB(roomId.value, "score", -2);
   } else {
     await increaseValueWithDB(roomId.value, "score", 2);
@@ -150,8 +143,7 @@ const LaoChaofengVote = async () => {
 };
 
 const MedicineIsNotVote = async () => {
-  const votedPlayerTemp = await getPlayerData(votedPlayer.value);
-  if (votedPlayerTemp.character === "FangZhen") {
+  if (votedPlayer.value === "FangZhen") {
     await increaseValueWithDB(roomId.value, "score", -1);
   } else {
     await increaseValueWithDB(roomId.value, "score", 1);
@@ -159,8 +151,7 @@ const MedicineIsNotVote = async () => {
 };
 
 const goodPlayerVote = async () => {
-  const votedPlayerTemp = await getPlayerData(votedPlayer.value);
-  if (votedPlayerTemp.character === "LaoChaofeng") {
+  if (votedPlayer.value === "LaoChaofeng") {
     await increaseValueWithDB(roomId.value, "voteLaoChaofeng", 1);
   }
 };
@@ -186,7 +177,23 @@ const handleSubmit = async () => {
   }
 };
 
-const listenedValueChange = async () => {};
+const listenedValueChange = async () => {
+  const q = query(collection(db, "rooms"), where("roomId", "==", roomId.value));
+  const querySnapshot = await getDocs(q);
+  const docSnapshot = querySnapshot.docs[0];
+  const roomData = docSnapshot.data() as DocumentData;
+  if (roomData.voteLaoChaofeng >= 3 && host.value) {
+    await increaseValueWithDB(roomId.value, "score", 1);
+  } else if (host.value) {
+    await increaseValueWithDB(roomId.value, "score", -1);
+  }
+  router.push({
+    path: `${path}/endGame/${roomId.value}`,
+    query: {
+      ...route.query,
+    },
+  });
+};
 
 const listenRound = async (roomId: string) => {
   try {

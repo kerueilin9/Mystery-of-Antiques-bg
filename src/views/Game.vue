@@ -84,7 +84,6 @@ import { useRoute, useRouter } from "vue-router";
 import { CreateOutline } from "@vicons/ionicons5";
 import { db, realtimeDB } from "@/firebaseConfig";
 import {
-  setDoc,
   doc,
   query,
   collection,
@@ -124,14 +123,12 @@ const host = computed(() => {
 });
 
 const currentRound = ref(0);
-const turn = ref(1);
 const isSelectModal = ref(false);
 const isCheckModal = ref(false);
 const isSkillModal = ref(false);
 const isVoteModal = ref(false);
 const isRecordModal = ref(false);
 const playerData = ref();
-const character = ref("");
 
 const teammates = ["LaoChaofeng", "MedicineIsNot"];
 
@@ -158,7 +155,7 @@ const getRemainPlayerCount = async (): Promise<number> => {
         ++remainPlayerCount;
       }
     });
-    console.log(remainPlayerCount);
+    console.log("剩餘玩家人數: " + remainPlayerCount);
     return remainPlayerCount;
   } catch (err) {
     return -1;
@@ -191,19 +188,6 @@ const getPlayerDataByCharacter = async (character: string) => {
   } catch (err) {}
 };
 
-const getCurrentRound = async () => {
-  try {
-    const q = query(
-      collection(db, "rooms"),
-      where("roomId", "==", roomId.value)
-    );
-    const querySnapshot = await getDocs(q);
-    const docSnapshot = querySnapshot.docs[0];
-    const roomData = docSnapshot.data() as DocumentData;
-    return roomData.currentRound;
-  } catch (err) {}
-};
-
 const showTeammate = async () => {
   const playerCharacter = await getPlayerData();
   if (!teammates.includes(playerCharacter.character)) {
@@ -222,7 +206,6 @@ const showCheckModal = async () => {
   if (playerData.value.character === "FangZhen")
     message.warning("你沒有鑑寶能力");
   else if (playerData.value.myTurn === 1) {
-    // currentRound.value = await getCurrentRound();
     isCheckModal.value = true;
   } else {
     message.warning("還沒有到你的回合");
@@ -232,8 +215,6 @@ const showCheckModal = async () => {
 const showSkillModal = async () => {
   playerData.value = await getPlayerData();
   if (playerData.value.myTurn === 1) {
-    character.value = playerData.value.character;
-    // currentRound.value = await getCurrentRound();
     isSkillModal.value = true;
   } else {
     message.warning("還沒有到你的回合");
@@ -252,7 +233,6 @@ const showSelectModal = async () => {
 const showVoteModal = async () => {
   playerData.value = await getPlayerData();
   if ((await getRemainPlayerCount()) === 0) {
-    // currentRound.value = await getCurrentRound();
     isVoteModal.value = true;
   } else {
     message.warning("還有玩家未行動");
@@ -261,7 +241,6 @@ const showVoteModal = async () => {
 
 const showRecordModal = async () => {
   playerData.value = await getPlayerData();
-  // currentRound.value = await getCurrentRound();
   isRecordModal.value = true;
 };
 
