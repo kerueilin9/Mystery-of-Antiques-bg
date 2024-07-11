@@ -111,7 +111,8 @@ const getCurrentRoundAnimal = async () => {
 
 const handleSubmit = async () => {
   let resultAnimal: Animal[] = null;
-  if (animal.value.length === 0 || animal.value === null) {
+  console.log(animal.value);
+  if (animal.value === null || animal.value.length === 0) {
     message.warning("請選擇至少一隻動物");
   } else if (playerData.value.isCheckAble > currentRound.value) {
     message.warning("本輪已查看過，請勿作弊");
@@ -181,6 +182,7 @@ watch(
   () => showModal.value,
   (value) => {
     if (value === true) {
+      animal.value = null;
       result.value = "";
       getCurrentRoundAnimal();
       if (playerData.value.isCheckAble <= currentRound.value)

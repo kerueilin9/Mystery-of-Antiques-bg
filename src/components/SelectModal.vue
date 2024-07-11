@@ -123,7 +123,8 @@ const setTurnPlayer = async (character: string) => {
 };
 
 const handleSubmit = async () => {
-  if (selectedPlayer.value.length === 0) message.warning("請選擇玩家");
+  if (selectedPlayer.value === null || selectedPlayer.value.trim() === "")
+    message.warning("請選擇玩家");
   else if (!isHostAndInGame.value) {
     await removePlayer(selectedPlayer.value);
     await setTurnPlayer(selectedPlayer.value);

@@ -6,6 +6,31 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
+exports.deleteExpiredDocuments = functions.pubsub
+  .schedule("every 60 minutes")
+  .onRun(async (context) => {
+    const db = admin.firestore();
+    const now = admin.firestore.Timestamp.now();
+    const twoHoursAgo = new admin.firestore.Timestamp(
+      now.seconds - 20,
+      now.nanoseconds
+    );
+    const snapshot = await db
+      .collection("rooms")
+      .where("createdAt", "<=", twoHoursAgo)
+      .get();
+
+    const promises: any[] = [];
+    snapshot.docs.forEach((doc) => {
+      const roomId = doc.id;
+      promises.push(deleteDocumentWithSubcollections(db, roomId));
+    });
+
+    await Promise.all(promises);
+    console.log("Deleted expired rooms and their subcollections");
+    return null;
+  });
+
 /**
  * Cloud function to delete a room and its subcollections.
  *
