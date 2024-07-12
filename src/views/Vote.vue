@@ -120,24 +120,36 @@ const getPlayerData = async (name: string) => {
 };
 
 const LaoChaofengVote = async () => {
-  if (votedPlayer.value === "MakeAWish") {
-    await increaseValueWithDB(roomId.value, "score", -2);
-  } else {
-    await increaseValueWithDB(roomId.value, "score", 2);
+  try {
+    if (votedPlayer.value === "MakeAWish") {
+      await increaseValueWithDB(roomId.value, "score", -2);
+    } else {
+      await increaseValueWithDB(roomId.value, "score", 2);
+    }
+  } catch (err) {
+    console.log("老朝奉鑑人問題：" + err);
   }
 };
 
 const MedicineIsNotVote = async () => {
-  if (votedPlayer.value === "FangZhen") {
-    await increaseValueWithDB(roomId.value, "score", -1);
-  } else {
-    await increaseValueWithDB(roomId.value, "score", 1);
+  try {
+    if (votedPlayer.value === "FangZhen") {
+      await increaseValueWithDB(roomId.value, "score", -1);
+    } else {
+      await increaseValueWithDB(roomId.value, "score", 1);
+    }
+  } catch (err) {
+    console.log("藥不然鑑人問題：" + err);
   }
 };
 
 const goodPlayerVote = async () => {
-  if (votedPlayer.value === "LaoChaofeng") {
-    await increaseValueWithDB(roomId.value, "voteLaoChaofeng", 1);
+  try {
+    if (votedPlayer.value === "LaoChaofeng") {
+      await increaseValueWithDB(roomId.value, "voteLaoChaofeng", 1);
+    }
+  } catch (err) {
+    console.log("好人鑑人問題：" + err);
   }
 };
 
