@@ -190,11 +190,11 @@ const handleUpdateValue = (value: (string | number)[]) => {
 
 watch(
   () => showModal.value,
-  (value) => {
+  async (value) => {
     if (value === true) {
       animal.value = null;
       result.value = "";
-      getCurrentRoundAnimal();
+      await getCurrentRoundAnimal();
       if (playerData.value.isCheckAble <= currentRound.value)
         isAbleToCheck.value = true;
       else isAbleToCheck.value = false;
