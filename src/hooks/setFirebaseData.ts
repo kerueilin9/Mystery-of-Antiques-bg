@@ -73,6 +73,28 @@ const setValue = async (
   await Promise.all(updatePromises1);
 };
 
+const setPlayerRecord = async (
+  dataref: any,
+  playerName: string | number,
+  round: number | string,
+  value: number | string
+) => {
+  const userCollectionRef = collection(dataref, "players");
+  let q = query(userCollectionRef, where("name", "==", playerName));
+  let snapshot = await getDocs(q);
+  const docSnapshot = snapshot.docs[0];
+  const playerData = docSnapshot.data() as DocumentData;
+  const roundKey = `round${round}`;
+  const roundData = playerData.record[roundKey] || [];
+  roundData.push(value);
+  const updatePromises = snapshot.docs.map((docSnapshot) =>
+    updateDoc(docSnapshot.ref, {
+      record: { ...playerData.record, [roundKey]: roundData },
+    })
+  );
+  await Promise.all(updatePromises);
+};
+
 const setRTValue = async (path: string, value: string | number | object) => {
   const dataRef = fireRef(realtimeDB, path);
   const newItemRef = push(dataRef);
@@ -107,6 +129,7 @@ export {
   increaseValue,
   increaseValueWithDB,
   setValue,
+  setPlayerRecord,
   setRTValue,
   setRTRoomValue,
 };

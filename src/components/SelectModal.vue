@@ -29,7 +29,6 @@
 import { computed, ref, watch } from "vue";
 import { db } from "@/firebaseConfig";
 import {
-  setDoc,
   doc,
   collection,
   getDocs,
