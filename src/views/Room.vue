@@ -43,6 +43,7 @@
           <n-button class="text-2xl" size="large">返回</n-button>
         </router-link>
         <n-button
+          :loading="submitLoading"
           class="text-2xl"
           size="large"
           type="primary"
@@ -95,6 +96,7 @@ const animals = ref<Animal[]>();
 const turn = ref(1);
 const gameStart = ref(0);
 const playerCount = ref(0);
+const submitLoading = ref(false);
 
 const characterOptions = [
   { label: "老朝奉", value: "LaoChaofeng" },
@@ -234,6 +236,7 @@ const getRandomNumber = (): number => {
 
 const handleSubmit = async () => {
   try {
+    submitLoading.value = true;
     const roomRef = doc(db, "rooms", roomId.value);
     const playerInfo = {
       name: basicForm.value.name,
@@ -268,9 +271,11 @@ const handleSubmit = async () => {
       await setFourRandomAnimals();
       gameStart.value = 1;
       showSelectModal.value = true;
+      submitLoading.value = false;
     } else {
       await setDoc(doc(roomRef, "players", basicForm.value.name), playerInfo);
       await setRTRoomValue(roomId.value, "playerCount", 1);
+      submitLoading.value = false;
       router.push({
         path: `${path}/game/${roomId.value}`,
         query: { host: host.value ? 1 : 0, player: basicForm.value.name },
