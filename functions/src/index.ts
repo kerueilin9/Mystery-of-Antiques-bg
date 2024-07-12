@@ -7,12 +7,12 @@ admin.initializeApp();
 const db = admin.firestore();
 
 exports.deleteExpiredDocuments = functions.pubsub
-  .schedule("every 60 minutes")
+  .schedule("every 1 hours")
   .onRun(async (context) => {
     const db = admin.firestore();
     const now = admin.firestore.Timestamp.now();
     const twoHoursAgo = new admin.firestore.Timestamp(
-      now.seconds - 20,
+      now.seconds - 7200,
       now.nanoseconds
     );
     const snapshot = await db
@@ -22,8 +22,8 @@ exports.deleteExpiredDocuments = functions.pubsub
 
     const promises: any[] = [];
     snapshot.docs.forEach((doc) => {
-      const roomId = doc.id;
-      promises.push(deleteDocumentWithSubcollections(db, roomId));
+      const roomPath = `rooms/${doc.id}`;
+      promises.push(deleteDocumentWithSubcollections(db, roomPath));
     });
 
     await Promise.all(promises);

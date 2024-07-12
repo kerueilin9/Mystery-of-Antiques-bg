@@ -2,6 +2,13 @@
   <div class="w-10/12 max-w-sm mt-8 mx-auto text-center">
     <p class="text-3xl">房號：{{ roomId }}</p>
     <div class="text-9xl mt-28">{{ result }}</div>
+    <div class="mt-16">
+      <router-link to="/Mystery-of-Antiques-bg/">
+        <n-button round class="text-6xl h-fit p-4" type="primary"
+          >回到大廳</n-button
+        >
+      </router-link>
+    </div>
   </div>
 </template>
 
