@@ -77,14 +77,18 @@ import {
 } from "firebase/firestore";
 import { SelectGroupOption, SelectOption, useMessage } from "naive-ui";
 import { useRoute, useRouter } from "vue-router";
-import { increaseValue, setValue } from "@/hooks/setFirebaseData";
+import {
+  increaseValue,
+  setPlayerRecord,
+  setValue,
+} from "@/hooks/setFirebaseData";
+import { getPlayerDataByCharacter } from "@/hooks/getFirebaseData";
 
 const path = "/Mystery-of-Antiques-bg";
 const message = useMessage();
 const route = useRoute();
 const router = useRouter();
 const options = ref<SelectOption[]>();
-const options_test = ref<SelectOption[]>();
 
 const roomId = ref();
 roomId.value = route.params.roomId;
@@ -119,8 +123,6 @@ const isSubmitAble = computed(() => {
     checkedPlayer.value.length === 0
   );
 });
-
-options_test.value = [{ label: "435", value: "MedicineIsNot" }];
 
 const medicineIsNotOptions = ref<Array<SelectOption | SelectGroupOption>>([]);
 
@@ -210,13 +212,12 @@ const toggleViewValue = async (docId: string) => {
       if (currentValue >= 0) {
         const newValue = currentValue === 1 ? 0 : 1;
         await setDoc(docRef, { view_value: newValue }, { merge: true });
-        // console.log(`Document ${docId} updated: view_value set to ${newValue}`);
       }
     } else {
       console.warn("無對應資料");
     }
-  } catch (error) {
-    console.error("老嘲諷技能問題: ", error);
+  } catch (err) {
+    console.error("老嘲諷技能問題: ", err);
   }
 };
 
@@ -230,6 +231,12 @@ const changeTrueFalse = async (isActivate: boolean) => {
       querySnapshot.forEach((doc) => {
         toggleViewValue(doc.id);
       });
+      setPlayerRecord(
+        roomRef,
+        playerData.value.name,
+        currentRound.value,
+        "使用了技能"
+      );
     } catch (error) {
       console.error("老嘲諷技能問題: ", error);
     }
@@ -252,20 +259,70 @@ const setCoveredAnimal = async (animal: string) => {
     });
 
     await Promise.all(updatePromises);
-  } catch (err) {}
-};
-
-const attackingPlayer = async (character: string) => {
-  increaseValue(roomRef, "players", "character", character, "attacked", 1);
-  if (character === "FangZhen") {
-    increaseValue(roomRef, "players", "character", "MakeAWish", "attacked", 1);
+    setPlayerRecord(
+      roomRef,
+      playerData.value.name,
+      currentRound.value,
+      `你將${animal}隱藏`
+    );
+  } catch (err) {
+    console.log("鄭國渠技能問題：" + err);
   }
 };
 
-const checkPlayer = async (name: string) => {
+const attackingPlayer = async (character: string) => {
+  try {
+    await increaseValue(
+      roomRef,
+      "players",
+      "character",
+      character,
+      "attacked",
+      1
+    );
+    if (character === "FangZhen") {
+      await increaseValue(
+        roomRef,
+        "players",
+        "character",
+        "MakeAWish",
+        "attacked",
+        1
+      );
+    }
+    if (character === "JiYunfu") {
+      await increaseValue(
+        roomRef,
+        "players",
+        "character",
+        character,
+        "attacked",
+        10
+      );
+    }
+    const player = await getPlayerDataByCharacter(roomRef, character);
+    setPlayerRecord(
+      roomRef,
+      playerData.value.name,
+      currentRound.value,
+      `你襲擊了${player.name}`
+    );
+  } catch (err) {
+    console.log("藥不然技能問題：" + err);
+  }
+};
+
+const checkPlayer = async (character: string) => {
   playerResult.value = `此玩家是${
-    goodCharacters.includes(name) ? "好人" : "壞人"
+    goodCharacters.includes(character) ? "好人" : "壞人"
   }`;
+  const player = await getPlayerDataByCharacter(roomRef, character);
+  setPlayerRecord(
+    roomRef,
+    playerData.value.name,
+    currentRound.value,
+    `你驗了${player.name}，${playerResult.value}`
+  );
 };
 
 const handleSubmit = async () => {

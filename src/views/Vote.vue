@@ -119,21 +119,6 @@ const getPlayerData = async (name: string) => {
   }
 };
 
-const getPlayerDataByCharacter = async (character: string) => {
-  try {
-    const q = query(
-      collection(roomRef, "players"),
-      where("character", "==", character)
-    );
-    const querySnapshot = await getDocs(q);
-    const docSnapshot = querySnapshot.docs[0];
-    const playerData = docSnapshot.data() as DocumentData;
-    return playerData;
-  } catch (err) {
-    console.log(err);
-  }
-};
-
 const LaoChaofengVote = async () => {
   if (votedPlayer.value === "MakeAWish") {
     await increaseValueWithDB(roomId.value, "score", -2);
@@ -207,7 +192,7 @@ const listenRound = async (roomId: string) => {
     onValue(roomQuery, async (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
-        const roomKey = Object.keys(data)[0]; // 获取第一个结果的 key
+        const roomKey = Object.keys(data)[0];
         const playerCount = data[roomKey].playerCount || 0;
         const votedPlayerCount = data[roomKey].votedPlayerCount || 0;
         if (playerCount === votedPlayerCount) await listenedValueChange();

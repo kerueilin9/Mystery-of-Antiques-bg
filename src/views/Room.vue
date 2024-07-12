@@ -247,6 +247,11 @@ const handleSubmit = async () => {
       inActiveRound: excludedCharacters.includes(basicForm.value.character)
         ? getRandomNumber()
         : 0,
+      record: {
+        round1: [],
+        round2: [],
+        round3: [],
+      },
     };
     if (host.value) {
       await setDoc(doc(roomRef, "players", basicForm.value.name), playerInfo);

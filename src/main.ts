@@ -25,6 +25,7 @@ import {
   NTab,
   NTabs,
   NTabPane,
+  NDivider,
   useMessage,
 } from "naive-ui";
 
@@ -51,6 +52,7 @@ const naive = create({
     NTab,
     NTabs,
     NTabPane,
+    NDivider,
     useMessage,
   ],
 });

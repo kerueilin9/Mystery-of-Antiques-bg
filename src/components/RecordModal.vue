@@ -21,15 +21,12 @@
               {{ animal.name }}
             </div>
           </div>
-          <n-form>
-            <n-form-item-row label="Username">
-              <n-input />
-            </n-form-item-row>
-            <n-form-item-row label="Password">
-              <n-input />
-            </n-form-item-row>
-          </n-form>
-          <n-button type="primary" block secondary strong> Sign In </n-button>
+          <div v-if="records.round1.length != 0">
+            <n-divider dashed class="text-3xl"> 歷史行動 </n-divider>
+            <div v-for="context in records.round1" class="text-2xl">
+              {{ context }}
+            </div>
+          </div>
         </n-tab-pane>
         <n-tab-pane name="secondRound" tab="第二回合">
           <div class="flex justify-around">
@@ -37,18 +34,12 @@
               {{ animal.name }}
             </div>
           </div>
-          <n-form>
-            <n-form-item-row label="Username">
-              <n-input />
-            </n-form-item-row>
-            <n-form-item-row label="Password">
-              <n-input />
-            </n-form-item-row>
-            <n-form-item-row label="Reenter Password">
-              <n-input />
-            </n-form-item-row>
-          </n-form>
-          <n-button type="primary" block secondary strong> Sign up </n-button>
+          <div v-if="records.round2 != 0">
+            <n-divider dashed class="text-3xl"> 歷史行動 </n-divider>
+            <div v-for="context in records.round2" class="text-2xl">
+              {{ context }}
+            </div>
+          </div>
         </n-tab-pane>
         <n-tab-pane name="thirdRound" tab="第三回合">
           <div class="flex justify-around">
@@ -56,18 +47,12 @@
               {{ animal.name }}
             </div>
           </div>
-          <n-form>
-            <n-form-item-row label="Username">
-              <n-input />
-            </n-form-item-row>
-            <n-form-item-row label="Password">
-              <n-input />
-            </n-form-item-row>
-            <n-form-item-row label="Reenter Password">
-              <n-input />
-            </n-form-item-row>
-          </n-form>
-          <n-button type="primary" block secondary strong> Sign up </n-button>
+          <div v-if="records.round3 != 0">
+            <n-divider dashed class="text-3xl"> 歷史行動 </n-divider>
+            <div v-for="context in records.round3" class="text-2xl">
+              {{ context }}
+            </div>
+          </div>
         </n-tab-pane>
       </n-tabs>
 
@@ -120,6 +105,8 @@ const roundOver = ref(false);
 
 const roundAnimals = ref([]);
 
+const records = ref();
+
 const getRoundAnimal = async (Round: number) => {
   try {
     const animalsCollectionRef = collection(
@@ -152,6 +139,7 @@ watch(
   (value) => {
     if (value === true) {
       getAllAnimals(currentRound.value);
+      records.value = playerData.value.record;
       isAbleToCheck.value = true;
       roundOver.value = false;
     }

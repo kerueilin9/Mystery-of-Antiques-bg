@@ -68,7 +68,11 @@ import {
 import { useMessage } from "naive-ui";
 import { useRoute, useRouter } from "vue-router";
 import { Animal, Player } from "@/types";
-import { increaseValue, setValue } from "@/hooks/setFirebaseData";
+import {
+  increaseValue,
+  setPlayerRecord,
+  setValue,
+} from "@/hooks/setFirebaseData";
 const route = useRoute();
 const router = useRouter();
 const message = useMessage();
@@ -170,6 +174,12 @@ const handleSubmit = async () => {
       playerData.value.name,
       "isCheckAble",
       currentRound.value + 1
+    );
+    setPlayerRecord(
+      roomRef,
+      playerData.value.name,
+      currentRound.value,
+      result.value
     );
   }
 };

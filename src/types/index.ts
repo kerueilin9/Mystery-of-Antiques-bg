@@ -8,6 +8,11 @@ interface Player {
   isCheckAble: number;
   isSkillAble: number;
   inActiveRound: number;
+  record: {
+    round1: string[];
+    round2: string[];
+    round3: string[];
+  };
 }
 
 interface Animal {
