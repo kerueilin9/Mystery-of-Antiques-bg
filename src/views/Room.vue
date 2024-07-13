@@ -62,7 +62,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { httpsCallable } from "firebase/functions";
 import { useRoute, useRouter } from "vue-router";
-import { FormRules, useMessage } from "naive-ui";
+import { FormInst, FormRules, useMessage } from "naive-ui";
 import { increaseValue, setRTRoomValue } from "@/hooks/setFirebaseData";
 import { db, functions, realtimeDB } from "@/firebaseConfig";
 import {
@@ -96,6 +96,7 @@ const animals = ref<Animal[]>();
 const turn = ref(1);
 const gameStart = ref(0);
 const playerCount = ref(0);
+const basicFormRef = ref<FormInst | null>(null);
 const submitLoading = ref(false);
 
 const characterOptions = [
@@ -236,6 +237,7 @@ const getRandomNumber = (): number => {
 
 const handleSubmit = async () => {
   try {
+    await basicFormRef.value.validate();
     submitLoading.value = true;
     const roomRef = doc(db, "rooms", roomId.value);
     const playerInfo = {

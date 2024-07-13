@@ -129,9 +129,11 @@ const handleSubmit = async () => {
       typeof animal.value === "string" ? [animal.value] : animal.value;
     console.log(animal.value);
     // 留下有選中的動物
-    resultAnimal = currentRoundAnimals.value.filter((item) => {
-      return checkAnimals.some((remain) => remain === item.label);
-    });
+    resultAnimal = checkAnimals
+      .map((label) =>
+        currentRoundAnimals.value.find((item) => item.label === label)
+      )
+      .filter((item) => item !== undefined);
 
     for (let i = 0; i < 2; i++) {
       if (Number(resultAnimal[i].value) >= 0) {
