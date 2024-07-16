@@ -300,7 +300,7 @@ const listenRound = async (roomId: string) => {
     onValue(roomQuery, async (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
-        const roomKey = Object.keys(data)[0]; // 获取第一个结果的 key
+        const roomKey = Object.keys(data)[0];
         playerCount.value = data[roomKey].playerCount || 0;
       } else {
         console.log("roomId not found");
