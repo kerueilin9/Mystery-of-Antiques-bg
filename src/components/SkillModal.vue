@@ -18,7 +18,7 @@
         <n-radio-group
           v-model:value="coveredAnimal"
           name="radiogroup"
-          class="w-full"
+          class="w-full text-center"
         >
           <n-grid :y-gap="8" :cols="2">
             <n-gi v-for="(animal, index) in animals" :key="index">
@@ -90,7 +90,7 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { SelectGroupOption, SelectOption, useMessage } from "naive-ui";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import {
   increaseValue,
   setPlayerRecord,
@@ -98,10 +98,8 @@ import {
 } from "@/hooks/setFirebaseData";
 import { getPlayerDataByCharacter } from "@/hooks/getFirebaseData";
 
-const path = "/Mystery-of-Antiques-bg";
 const message = useMessage();
 const route = useRoute();
-const router = useRouter();
 const options = ref<SelectOption[]>();
 
 const roomId = ref();
