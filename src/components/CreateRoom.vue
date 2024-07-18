@@ -1,7 +1,8 @@
 <template>
   <div>
     <n-button
-      class="text-8xl h-fit"
+      round
+      class="text-7xl h-fit py-3 px-10 font-style-Bakudai text-stone-300"
       type="primary"
       :loading="isLoading"
       @click="createRoom"

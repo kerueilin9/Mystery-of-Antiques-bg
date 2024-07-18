@@ -34,15 +34,41 @@ body {
   height: 100%;
 }
 
-:root {
-  background: url("") no-repeat center center fixed;
-  background-color: #eeeeee;
-  background-size: cover;
-  height: 100%;
-}
 a:hover {
   color: #747bff;
 }
 button {
   background-color: #f9f9f9;
+}
+
+@layer base {
+  @font-face {
+    font-family: "Bakudai-Bold";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(./assets/Bakudai-Bold.woff2) format("woff2");
+  }
+  @font-face {
+    font-family: "MaShanZheng-Regular";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(./assets/MaShanZheng-Regular.ttf) format("truetype");
+  }
+}
+
+.font-style-Bakudai {
+  font-family: "Bakudai-Bold", serif;
+}
+
+.font-style-MaShanZheng {
+  font-family: "MaShanZheng-Regular", serif;
+}
+
+:root {
+  background: url("") no-repeat center center fixed;
+  background-color: #eeeeee;
+  background-size: cover;
+  height: 100%;
 }

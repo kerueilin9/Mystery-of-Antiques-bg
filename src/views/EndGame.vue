@@ -15,7 +15,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { db, realtimeDB } from "@/firebaseConfig";
+import { db } from "@/firebaseConfig";
 import {
   doc,
   query,
@@ -24,20 +24,7 @@ import {
   getDocs,
   DocumentData,
 } from "firebase/firestore";
-import { SelectOption, useMessage } from "naive-ui";
-import {
-  push,
-  set,
-  ref as fireRef,
-  orderByChild,
-  equalTo,
-  get,
-  update,
-  query as rtQuery,
-  onValue,
-} from "firebase/database";
-import { AtSharp } from "@vicons/ionicons5";
-import { increaseValueWithDB, setRTRoomValue } from "@/hooks/setFirebaseData";
+import { useMessage } from "naive-ui";
 
 const path = "/Mystery-of-Antiques-bg";
 const route = useRoute();

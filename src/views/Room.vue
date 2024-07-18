@@ -1,8 +1,8 @@
 <template>
-  <div class="w-10/12 max-w-sm text-center mt-8">
-    <p class="text-3xl">房號：{{ roomId }}</p>
+  <div class="w-10/12 max-w-sm text-center mt-8 font-style-MaShanZheng">
+    <p class="text-3xl">房号：{{ roomId }}</p>
     <div class="mt-28">
-      <n-card header-style="font-size: 32px" title="玩家資料">
+      <n-card header-style="font-size: 32px" title="玩家资料">
         <n-form
           class="text-center"
           ref="basicFormRef"
@@ -12,7 +12,7 @@
         >
           <n-form-item
             path="name"
-            label="玩家暱稱"
+            label="玩家昵称"
             label-style="font-size: 24px"
           >
             <n-input
@@ -20,7 +20,7 @@
               class="w-full text-xl"
               :show-button="false"
               v-model:value="basicForm.name"
-              placeholder="請填參與玩家都知道的暱稱"
+              placeholder="请填参与玩家都知道的昵称"
             />
           </n-form-item>
           <n-form-item
@@ -33,14 +33,14 @@
               class="w-full custom-select-font-size"
               v-model:value="basicForm.character"
               :options="characterOptions"
-              placeholder="選取抽到的角色"
+              placeholder="选取抽到的角色"
             />
           </n-form-item>
         </n-form>
       </n-card>
       <section class="flex gap-2 flex-wrap mt-2 justify-center">
         <router-link to="/Mystery-of-Antiques-bg/">
-          <n-button class="text-2xl" size="large">返回</n-button>
+          <n-button secondary class="text-2xl" size="large">返回</n-button>
         </router-link>
         <n-button
           :loading="submitLoading"
@@ -51,7 +51,7 @@
           >{{ start }}</n-button
         >
       </section>
-      <div class="text-2xl mt-16">房內人數：{{ playerCount }}</div>
+      <div class="text-2xl mt-16">房内人数：{{ playerCount }}</div>
     </div>
 
     <SelectModal v-model:showModal="showSelectModal" :name="basicForm.name" />
@@ -153,7 +153,7 @@ const host = computed(() => {
 const hostValue = host.value;
 
 const start = computed(() => {
-  return host.value ? "開始遊戲" : "加入遊戲";
+  return host.value ? "开始游戏" : "加入游戏";
 });
 
 interface Animal {
@@ -300,7 +300,7 @@ const listenRound = async (roomId: string) => {
     onValue(roomQuery, async (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
-        const roomKey = Object.keys(data)[0]; // 获取第一个结果的 key
+        const roomKey = Object.keys(data)[0];
         playerCount.value = data[roomKey].playerCount || 0;
       } else {
         console.log("roomId not found");
