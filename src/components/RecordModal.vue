@@ -1,7 +1,7 @@
 <template>
   <n-modal v-model:show="showModal" :mask-closable="true">
     <n-card
-      header-style="font-size: 28px"
+      header-style="font-size: 32px"
       class="max-w-90 w-96 font-style-Bakudai"
       title="紀錄"
       :bordered="false"
@@ -16,7 +16,8 @@
         type="segment"
         animated
       >
-        <n-tab-pane name="firstRound" tab="第一回合">
+        <n-tab-pane name="firstRound" :tab="renderTab('第一回合', '20px')">
+          <n-divider dashed class="text-3xl"> 本回合古董 </n-divider>
           <div class="flex justify-around">
             <div class="text-2xl" v-for="animal in roundAnimals[1]">
               {{ animal.name }}
@@ -29,7 +30,8 @@
             </div>
           </div>
         </n-tab-pane>
-        <n-tab-pane name="secondRound" tab="第二回合">
+        <n-tab-pane name="secondRound" :tab="renderTab('第二回合', '20px')">
+          <n-divider dashed class="text-3xl"> 本回合古董 </n-divider>
           <div class="flex justify-around">
             <div class="text-2xl" v-for="animal in roundAnimals[2]">
               {{ animal.name }}
@@ -42,7 +44,8 @@
             </div>
           </div>
         </n-tab-pane>
-        <n-tab-pane name="thirdRound" tab="第三回合">
+        <n-tab-pane name="thirdRound" :tab="renderTab('第三回合', '20px')">
+          <n-divider dashed class="text-3xl"> 本回合古董 </n-divider>
           <div class="flex justify-around">
             <div class="text-2xl" v-for="animal in roundAnimals[3]">
               {{ animal.name }}
@@ -69,26 +72,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { h, ref, watch } from "vue";
 import { db } from "@/firebaseConfig";
-import {
-  setDoc,
-  doc,
-  collection,
-  getDocs,
-  DocumentData,
-  where,
-  query,
-  updateDoc,
-  increment,
-} from "firebase/firestore";
-import { SelectOption, useMessage } from "naive-ui";
-import { useRoute, useRouter } from "vue-router";
-import { Animal, Player } from "@/types";
-import { increaseValue, setValue } from "@/hooks/setFirebaseData";
+import { doc, collection, getDocs, DocumentData } from "firebase/firestore";
+import { SelectOption } from "naive-ui";
+import { useRoute } from "vue-router";
+import { Player } from "@/types";
 const route = useRoute();
-const router = useRouter();
-const message = useMessage();
 
 const roomId = ref();
 roomId.value = route.params.roomId;
@@ -97,16 +87,16 @@ const roomRef = doc(db, "rooms", roomId.value);
 const showModal = defineModel("showModal");
 const currentRound = defineModel<number>("currentRound");
 const playerData = defineModel<Player>("playerData");
-const currentRoundAnimals = ref<SelectOption[]>();
-const options = ref<SelectOption[]>();
-const animal = ref<string | (string | number)[]>(null);
-const result = ref("");
 const isAbleToCheck = ref(true);
 const roundOver = ref(false);
 
 const roundAnimals = ref([]);
 
 const records = ref();
+
+const renderTab = (label: string, fontSize: string) => {
+  return h("span", { style: { fontSize } }, label);
+};
 
 const getRoundAnimal = async (Round: number) => {
   try {
