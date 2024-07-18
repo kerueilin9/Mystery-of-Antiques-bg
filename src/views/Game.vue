@@ -1,7 +1,9 @@
 <template>
-  <div class="w-10/12 max-w-sm mt-8 mx-auto text-center font-style-MaShanZheng">
-    <p class="text-3xl">房号：{{ roomId }}</p>
-    <div class="flex flex-col justify-around h-3/5 mt-8">
+  <div class="w-10/12 max-w-sm mx-auto text-center font-style-MaShanZheng">
+    <div class="h-1/6 py-7">
+      <p class="text-3xl">房号：{{ roomId }}</p>
+    </div>
+    <div class="flex flex-col justify-around h-3/5">
       <n-button
         class="text-4xl h-14"
         type="primary"
@@ -39,11 +41,11 @@
         >投票</n-button
       >
     </div>
-    <div class="flex flex-col items-center">
+    <div class="flex flex-col items-center h-1/5 py-6">
       <n-button
         @click="showRecordModal()"
         circle
-        class="w-20 h-20 absolute bottom-20"
+        class="w-20 h-20"
         dashed
         type="info"
       >

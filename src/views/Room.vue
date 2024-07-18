@@ -1,7 +1,9 @@
 <template>
-  <div class="w-10/12 max-w-sm text-center mt-8 font-style-MaShanZheng">
-    <p class="text-3xl">房号：{{ roomId }}</p>
-    <div class="mt-28">
+  <div class="w-10/12 max-w-sm text-center font-style-MaShanZheng">
+    <div class="h-1/5 py-7">
+      <p class="text-3xl">房号：{{ roomId }}</p>
+    </div>
+    <div>
       <n-card header-style="font-size: 32px" title="玩家资料">
         <n-form
           class="text-center"
@@ -17,10 +19,10 @@
           >
             <n-input
               size="large"
-              class="w-full text-xl"
+              class="w-full text-2xl font-style-Bakudai"
               :show-button="false"
               v-model:value="basicForm.name"
-              placeholder="请填参与玩家都知道的昵称"
+              placeholder="請填入昵称"
             />
           </n-form-item>
           <n-form-item
@@ -30,7 +32,7 @@
           >
             <n-select
               size="large"
-              class="w-full custom-select-font-size"
+              class="w-full custom-select-font-size font-style-Bakudai"
               v-model:value="basicForm.character"
               :options="characterOptions"
               placeholder="选取抽到的角色"

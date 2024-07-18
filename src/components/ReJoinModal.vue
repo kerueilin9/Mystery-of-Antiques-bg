@@ -1,7 +1,8 @@
 <template>
   <n-modal v-model:show="showModal">
     <n-card
-      style="width: 400px"
+      header-style="font-size: 28px"
+      class="max-w-90 w-96 font-style-Bakudai"
       title="重新入房"
       :bordered="false"
       size="huge"
