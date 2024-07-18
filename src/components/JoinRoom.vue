@@ -1,14 +1,14 @@
 <template>
-  <div class="flex flex-col items-center">
+  <div class="flex flex-col items-center font-style-Bakudai">
     <n-input
       size="large"
-      class="max-w-44 block"
+      class="max-w-44 block text-xl"
       v-model:value="roomId"
       placeholder="輸入房間ID"
     />
     <n-button
       round
-      class="text-7xl h-fit py-3 px-10 font-style-Bakudai text-stone-300"
+      class="text-7xl h-fit py-3 px-10 text-stone-300"
       type="info"
       @click="joinRoom"
       :loading="loading"
