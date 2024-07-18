@@ -1,7 +1,7 @@
 <template>
   <n-modal v-model:show="showModal">
     <n-card
-      style="width: 400px"
+      class="max-w-90 w-96"
       title="使用技能"
       :bordered="false"
       size="huge"

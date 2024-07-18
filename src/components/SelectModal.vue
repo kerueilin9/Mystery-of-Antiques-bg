@@ -4,7 +4,7 @@
     :mask-closable="isHostAndInGame ? true : false"
   >
     <n-card
-      style="width: 400px"
+      class="max-w-90 w-96"
       title="選擇下一位玩家"
       :bordered="false"
       size="huge"

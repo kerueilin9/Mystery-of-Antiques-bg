@@ -18,11 +18,12 @@
 }
 
 .custom-select-font-size .n-base-selection-label {
-  @apply text-xl;
+  @apply text-2xl;
 }
 
 .n-base-select-menu .n-base-select-option {
   @apply text-xl;
+  @apply font-style-Bakudai;
 }
 
 .n-base-select-menu .n-base-select-group-header {

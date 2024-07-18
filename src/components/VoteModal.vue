@@ -1,7 +1,7 @@
 <template>
   <n-modal v-model:show="showModal" :mask-closable="true">
     <n-card
-      style="width: 400px"
+      class="max-w-90 w-96"
       title="投票"
       :bordered="false"
       size="huge"

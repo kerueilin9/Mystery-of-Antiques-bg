@@ -2,7 +2,11 @@
 export default {
   content: ["./src/**/*.{vue,ts}"],
   theme: {
-    extend: {},
+    extend: {
+      maxWidth: {
+        90: "90%",
+      },
+    },
   },
   plugins: [],
 };
