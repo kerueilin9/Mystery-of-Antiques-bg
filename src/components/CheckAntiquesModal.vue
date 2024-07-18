@@ -1,7 +1,8 @@
 <template>
-  <n-modal v-model:show="showModal" :mask-closable="true">
+  <n-modal v-model:show="showModal" :mask-closable="true" class="bg-amber-100">
     <n-card
-      class="max-w-90 w-96"
+      class="max-w-90 w-96 font-style-Bakudai"
+      header-style="font-size: 28px"
       title="鑑定古董"
       :bordered="false"
       size="huge"
@@ -12,30 +13,45 @@
         v-if="playerData.character !== 'MakeAWish'"
         v-model:value="animal"
         name="radiogroup"
+        class="w-full text-center"
       >
-        <n-space>
-          <n-radio
-            v-for="animal in animals"
-            :key="animal.name"
-            :value="animal.name"
-            :label="animal.name"
-          />
-        </n-space>
-      </n-radio-group>
-      <n-checkbox-group v-else :max="2" @update:value="handleUpdateValue">
         <n-grid :y-gap="8" :cols="2">
           <n-gi v-for="(animal, index) in animals" :key="index">
-            <n-checkbox :value="animal.name" :label="animal.name" />
+            <n-radio
+              class="text-xl text-center"
+              :key="animal.name"
+              :value="animal.name"
+              :label="animal.name"
+            />
+          </n-gi>
+        </n-grid>
+      </n-radio-group>
+      <n-checkbox-group
+        v-else
+        :max="2"
+        @update:value="handleUpdateValue"
+        class="w-full text-center"
+      >
+        <n-grid :y-gap="8" :cols="2">
+          <n-gi v-for="(animal, index) in animals" :key="index">
+            <n-checkbox
+              class="text-xl text-center"
+              :value="animal.name"
+              :label="animal.name"
+            />
           </n-gi>
         </n-grid>
       </n-checkbox-group>
       <template #footer>
         <div class="flex justify-end mt-8">
           <div>
-            <n-button size="large" @click="showModal = false">返回</n-button>
+            <n-button class="text-xl" size="large" @click="showModal = false"
+              >返回</n-button
+            >
           </div>
           <div>
             <n-button
+              class="text-xl"
               v-if="isAbleToCheck"
               size="large"
               type="primary"
@@ -45,9 +61,8 @@
           </div>
         </div>
       </template>
-      <n-card title="鑑定結果" v-if="result.length !== 0">
-        {{ result }}
-      </n-card>
+      <n-divider dashed class="text-2xl"> 結果 </n-divider>
+      <div class="text-xl">{{ result }}</div>
     </n-card>
   </n-modal>
 </template>

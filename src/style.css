@@ -21,6 +21,10 @@
   @apply text-2xl;
 }
 
+.custom-select-font-size-game .n-base-selection-label {
+  @apply text-xl;
+}
+
 .n-base-select-menu .n-base-select-option {
   @apply text-xl;
   @apply font-style-Bakudai;

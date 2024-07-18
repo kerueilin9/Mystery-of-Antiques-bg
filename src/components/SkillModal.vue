@@ -1,7 +1,8 @@
 <template>
   <n-modal v-model:show="showModal">
     <n-card
-      class="max-w-90 w-96"
+      class="max-w-90 w-96 font-style-Bakudai"
+      header-style="font-size: 28px"
       title="使用技能"
       :bordered="false"
       size="huge"
@@ -9,28 +10,38 @@
       aria-modal="true"
     >
       <div v-if="playerData.character === 'LaoChaofeng'">
-        <n-checkbox v-model:checked="LaoChaofengSkill">
-          之後玩家看到的真假互換(同陣營和姬雲浮不適用)
+        <n-checkbox v-model:checked="LaoChaofengSkill" class="text-xl">
+          之後玩家鑑寶結果真假互換(同陣營和姬雲浮不適用)
         </n-checkbox>
       </div>
       <div v-else-if="playerData.character === 'ZhengGuoqu'">
-        <n-radio-group v-model:value="coveredAnimal" name="radiogroup">
-          <n-space>
-            <n-radio
-              v-for="animal in animals"
-              :key="animal.name"
-              :value="animal.name"
-              :label="animal.name"
-            />
-          </n-space>
+        <n-radio-group
+          v-model:value="coveredAnimal"
+          name="radiogroup"
+          class="w-full"
+        >
+          <n-grid :y-gap="8" :cols="2">
+            <n-gi v-for="(animal, index) in animals" :key="index">
+              <n-radio
+                class="text-xl"
+                :key="animal.name"
+                :value="animal.name"
+                :label="animal.name"
+              />
+            </n-gi>
+          </n-grid>
         </n-radio-group>
       </div>
       <n-select
+        size="large"
+        class="custom-select-font-size-game"
         v-else-if="playerData.character === 'MedicineIsNot'"
         v-model:value="attackedPlayer"
         :options="medicineIsNotOptions"
       />
       <n-select
+        size="large"
+        class="custom-select-font-size-game"
         v-else-if="playerData.character === 'FangZhen'"
         v-model:value="checkedPlayer"
         :options="options"
@@ -38,10 +49,13 @@
       <template #footer>
         <div class="flex justify-end mt-8">
           <div>
-            <n-button size="large" @click="showModal = false">返回</n-button>
+            <n-button class="text-xl" size="large" @click="showModal = false"
+              >返回</n-button
+            >
           </div>
           <div>
             <n-button
+              class="text-xl"
               v-if="isAbleToCheck"
               size="large"
               type="primary"

@@ -4,22 +4,34 @@
     :mask-closable="isHostAndInGame ? true : false"
   >
     <n-card
-      class="max-w-90 w-96"
+      class="max-w-90 w-96 font-style-Bakudai"
+      header-style="font-size: 28px"
       title="選擇下一位玩家"
       :bordered="false"
       size="huge"
       role="dialog"
       aria-modal="true"
     >
-      <n-select v-model:value="selectedPlayer" :options="options" />
+      <n-select
+        size="large"
+        class="custom-select-font-size-game"
+        v-model:value="selectedPlayer"
+        :options="options"
+      />
       <template #footer>
-        <n-button
-          :loading="isLoading"
-          size="large"
-          type="primary"
-          @click="handleSubmit()"
-          >確認</n-button
-        >
+        <div class="flex justify-end mt-8">
+          <n-button class="text-xl" size="large" @click="showModal = false"
+            >返回</n-button
+          >
+          <n-button
+            class="text-xl"
+            :loading="isLoading"
+            size="large"
+            type="primary"
+            @click="handleSubmit()"
+            >確認</n-button
+          >
+        </div>
       </template>
     </n-card>
   </n-modal>
