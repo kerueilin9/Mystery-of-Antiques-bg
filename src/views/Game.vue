@@ -1,20 +1,20 @@
 <template>
-  <div class="w-10/12 max-w-sm mt-8 mx-auto text-center">
-    <p class="text-3xl">房號：{{ roomId }}</p>
+  <div class="w-10/12 max-w-sm mt-8 mx-auto text-center font-style-MaShanZheng">
+    <p class="text-3xl">房号：{{ roomId }}</p>
     <div class="flex flex-col justify-around h-3/5 mt-8">
       <n-button
         class="text-4xl h-14"
         type="primary"
         size="large"
         @click="showTeammate()"
-        >查看隊友</n-button
+        >查看队友</n-button
       >
       <n-button
         class="text-4xl h-14"
         type="primary"
         size="large"
         @click="showCheckModal()"
-        >鑑定古董</n-button
+        >鉴定古董</n-button
       >
       <n-button
         class="text-4xl h-14"
@@ -28,7 +28,7 @@
         type="primary"
         size="large"
         @click="showSelectModal()"
-        >選擇下一位玩家</n-button
+        >选择下一位玩家</n-button
       >
       <n-button
         v-if="host"
