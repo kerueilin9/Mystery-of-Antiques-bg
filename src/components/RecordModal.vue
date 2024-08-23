@@ -10,56 +10,43 @@
       aria-modal="true"
     >
       <n-tabs
-        default-value="firstRound"
+        :default-value="`round${currentRound}`"
         size="large"
         justify-content="space-evenly"
         type="segment"
         animated
       >
-        <n-tab-pane name="firstRound" :tab="renderTab('第一回合', '20px')">
+        <n-tab-pane
+          v-for="round in [1, 2, 3]"
+          :key="round"
+          :name="`round${round}`"
+          :tab="renderTab(`第${roundNumbersInChinese[round]}回合`, '20px')"
+        >
           <n-divider dashed class="text-3xl"> 本回合古董 </n-divider>
           <div class="flex justify-around">
-            <div class="text-2xl" v-for="animal in roundAnimals[1]">
+            <div class="text-2xl" v-for="animal in roundAnimals[round]">
               {{ animal.name }}
             </div>
           </div>
-          <div v-if="records.round1.length != 0">
+          <div v-if="records[`round${round}`].length != 0">
             <n-divider dashed class="text-3xl"> 歷史行動 </n-divider>
-            <div v-for="context in records.round1" class="text-2xl">
+            <div v-for="context in records[`round${round}`]" class="text-2xl">
               {{ context }}
             </div>
           </div>
-        </n-tab-pane>
-        <n-tab-pane name="secondRound" :tab="renderTab('第二回合', '20px')">
-          <n-divider dashed class="text-3xl"> 本回合古董 </n-divider>
-          <div class="flex justify-around">
-            <div class="text-2xl" v-for="animal in roundAnimals[2]">
-              {{ animal.name }}
-            </div>
-          </div>
-          <div v-if="records.round2 != 0">
-            <n-divider dashed class="text-3xl"> 歷史行動 </n-divider>
-            <div v-for="context in records.round2" class="text-2xl">
-              {{ context }}
-            </div>
-          </div>
-        </n-tab-pane>
-        <n-tab-pane name="thirdRound" :tab="renderTab('第三回合', '20px')">
-          <n-divider dashed class="text-3xl"> 本回合古董 </n-divider>
-          <div class="flex justify-around">
-            <div class="text-2xl" v-for="animal in roundAnimals[3]">
-              {{ animal.name }}
-            </div>
-          </div>
-          <div v-if="records.round3 != 0">
-            <n-divider dashed class="text-3xl"> 歷史行動 </n-divider>
-            <div v-for="context in records.round3" class="text-2xl">
-              {{ context }}
-            </div>
-          </div>
+          <n-divider dashed class="text-3xl"> 筆記 </n-divider>
+          <n-input
+            v-model:value="note[round]"
+            class="text-xl"
+            type="textarea"
+            :autosize="{
+              minRows: 3,
+              maxRows: 5,
+            }"
+            placeholder="筆記區"
+          />
         </n-tab-pane>
       </n-tabs>
-
       <template #footer>
         <div class="flex justify-end mt-8">
           <div>
@@ -89,10 +76,17 @@ const currentRound = defineModel<number>("currentRound");
 const playerData = defineModel<Player>("playerData");
 const isAbleToCheck = ref(true);
 const roundOver = ref(false);
+const note = ref<string[]>(["", "", ""]);
 
 const roundAnimals = ref([]);
 
 const records = ref();
+
+const roundNumbersInChinese = {
+  1: "一",
+  2: "二",
+  3: "三",
+};
 
 const renderTab = (label: string, fontSize: string) => {
   return h("span", { style: { fontSize } }, label);
